@@ -2,7 +2,7 @@
   "name": "hw2",
   "version": "1.0.0",
   "description": "",
-  "main": "index.ts",
+  "main": "./dist/index.js",
   "scripts": {
     "build": "npx tsc",
     "start": "node dist/index.js",

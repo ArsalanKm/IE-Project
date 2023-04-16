@@ -9,8 +9,8 @@ dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT;
 app.get('/', (req, res) => {
-    res.send('Express + Typescript');
+    res.send('Expresedsss + Typescript');
 });
 app.listen(port, () => {
-    console.log('server is runnning');
+    console.log('server is ruwnnning');
 });
