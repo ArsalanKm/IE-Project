@@ -1,13 +1,15 @@
 import mongoose from 'mongoose';
 
-import { PersonSchemaType } from './_';
+import { passwordMiddleware, PersonSchemaType } from './_';
 
-const teacherSchema = new mongoose.Schema({
-  ...PersonSchemaType,
-  faculty: { type: String, required: true },
-  field: { type: String, required: true },
-  rank: { type: String, required: true },
-});
+const teacherSchema = passwordMiddleware(
+  new mongoose.Schema({
+    ...PersonSchemaType,
+    faculty: { type: String, required: true },
+    field: { type: String, required: true },
+    rank: { type: Number, required: true },
+  })
+);
 
 const Teacher = mongoose.model('Teacher', teacherSchema);
 

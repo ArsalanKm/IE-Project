@@ -1,11 +1,12 @@
 import mongoose from 'mongoose';
 
-import { PersonSchemaType } from './_';
+import { passwordMiddleware, PersonSchemaType } from './_';
 
-const managerSchema = new mongoose.Schema({
-  ...PersonSchemaType,
-  faculty: { type: String, required: true },
-});
+const managerSchema = passwordMiddleware(
+  new mongoose.Schema({
+    ...PersonSchemaType,
+  })
+);
 
 const Manager = mongoose.model('Manager', managerSchema);
 
