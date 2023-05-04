@@ -13,8 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const login_1 = require("../login");
-const admin_1 = __importDefault(require("../../models/admin"));
+const utils_1 = require("../utils");
 const professor_1 = __importDefault(require("./professor"));
 const student_1 = __importDefault(require("./student"));
 const manager_1 = __importDefault(require("./manager"));
@@ -23,26 +22,6 @@ const router = express_1.default.Router();
 router.use(professor_1.default);
 router.use(student_1.default);
 router.use(manager_1.default);
-router.post('/create-admin', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { name, password, familyName, universityId, email, phoneNumber } = req.body;
-    try {
-        const data = yield new admin_1.default({
-            name,
-            password,
-            familyName,
-            universityId,
-            email,
-            phoneNumber,
-        }).save();
-        if (data) {
-            res.status(200).send({ data, message: 'admin created successfully' });
-        }
-    }
-    catch (error) {
-        res.status(500).send({
-            message: 'Some error occurred while creating the admin.',
-        });
-    }
-}));
-router.post('/login', (req, res) => (0, login_1.loginHandler)('admin', req, res));
+router.post('/create-admin', (req, res) => __awaiter(void 0, void 0, void 0, function* () { return (0, utils_1.createUtil)('admin', req, res); }));
+router.post('/login', (req, res) => (0, utils_1.loginHandler)('admin', req, res));
 exports.default = router;

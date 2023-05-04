@@ -14,76 +14,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const jwt_1 = require("../../middlewares/jwt");
-const manager_1 = __importDefault(require("../../models/manager"));
+const utils_1 = require("../utils");
 const router = express_1.default.Router();
-router.post('/manager', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const data = req.body;
-    const existUser = yield manager_1.default.findOne({
-        universityId: data.universityId,
-    }).exec();
-    if (existUser) {
-        res.status(400).send({ message: 'manager exits with same university ID' });
-        return;
-    }
-    try {
-        const manager = yield new manager_1.default(Object.assign({}, data)).save();
-        res
-            .status(200)
-            .send({ message: 'manager created successfully', data: manager });
-    }
-    catch (error) {
-        res.status(500).send({ message: error });
-    }
-}));
-router.get('/managers', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const data = req.body;
-    try {
-        const managers = yield manager_1.default.find({});
-        res.status(200).send({ managers });
-    }
-    catch (error) {
-        res.status(500).send({ message: 'server error' });
-    }
-}));
-router.get('/manager/:id', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const data = req.body;
-    const { id } = req.params;
-    try {
-        const manager = yield manager_1.default.findById(id).exec();
-        res.status(200).send({ manager });
-    }
-    catch (error) {
-        res.status(500).send({ message: 'server error' });
-    }
-}));
-router.delete('/manager/:id', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const data = req.body;
-    const { id } = req.params;
-    try {
-        const result = yield manager_1.default.findByIdAndDelete(id).exec();
-        if (result) {
-            res.status(200).send({ data: result, message: 'deleted successfully' });
-        }
-        else {
-            res.status(400).send({ message: 'user does not exists' });
-        }
-    }
-    catch (error) {
-        res.status(500).send({ message: 'server error' });
-    }
-}));
-router.put('/manager/:id', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const data = req.body;
-    const { id } = req.params;
-    try {
-        const existUser = yield manager_1.default.findByIdAndUpdate(id, data);
-        if (!existUser) {
-            res.status(400).send({ message: 'There is no user with that id' });
-        }
-        res.status(200).send(existUser);
-    }
-    catch (error) {
-        res.status(500).send({ message: 'server error' });
-    }
-}));
+router.post('/manager', jwt_1.authMiddleware, (req, res) => (0, utils_1.createUtil)('manager', req, res));
+router.get('/managers', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return (0, utils_1.getListUtil)('manager', req, res); }));
+router.get('/manager/:id', jwt_1.authMiddleware, (req, res) => (0, utils_1.getByIdUtil)('manager', req, res));
+router.delete('/manager/:id', jwt_1.authMiddleware, (req, res) => (0, utils_1.deleteItemUtil)('manager', req, res));
+router.put('/manager/:id', jwt_1.authMiddleware, (req, res) => (0, utils_1.updateUtil)('manager', req, res));
 exports.default = router;

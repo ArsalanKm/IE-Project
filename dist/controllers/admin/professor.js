@@ -14,80 +14,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const jwt_1 = require("../../middlewares/jwt");
-const teacher_1 = __importDefault(require("../../models/teacher"));
+const utils_1 = require("../utils");
 const router = express_1.default.Router();
-router.post('/professor', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const data = req.body;
-    const existUser = yield teacher_1.default.findOne({
-        universityId: data.universityId,
-    }).exec();
-    if (existUser) {
-        res
-            .status(400)
-            .send({ message: 'Professor exits with same university ID' });
-        return;
-    }
-    try {
-        const teacher = yield new teacher_1.default(Object.assign({}, data)).save();
-        res
-            .status(200)
-            .send({ message: 'professor created successfully', data: teacher });
-    }
-    catch (error) {
-        res.status(500).send({ message: error });
-    }
-}));
-router.get('/professors', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const data = req.body;
-    try {
-        const professors = yield teacher_1.default.find({});
-        res.status(200).send({ professors });
-    }
-    catch (error) {
-        res.status(500).send({ message: 'server error' });
-    }
-}));
-router.get('/professor/:id', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const data = req.body;
-    const { id } = req.params;
-    try {
-        const professor = yield teacher_1.default.findById(id).exec();
-        res.status(200).send({ professor });
-    }
-    catch (error) {
-        res.status(500).send({ message: 'server error' });
-    }
-}));
-router.delete('/professor/:id', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const data = req.body;
-    const { id } = req.params;
-    try {
-        const result = yield teacher_1.default.findByIdAndDelete(id).exec();
-        if (result) {
-            res.status(200).send({ data: result, message: 'deleted successfully' });
-        }
-        else {
-            res
-                .status(400)
-                .send({ data: result, message: 'teacher does not exits' });
-        }
-    }
-    catch (error) {
-        res.status(500).send({ message: 'server error' });
-    }
-}));
-router.put('/professor/:id', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const data = req.body;
-    const { id } = req.params;
-    try {
-        const existUser = yield teacher_1.default.findByIdAndUpdate(id, data).exec();
-        if (!existUser) {
-            res.status(400).send({ message: 'There is no user with that id' });
-        }
-        res.status(200).send(existUser);
-    }
-    catch (error) {
-        res.status(500).send({ message: 'server error' });
-    }
-}));
+router.get('/professors', jwt_1.authMiddleware, (req, res) => (0, utils_1.getListUtil)('teacher', req, res));
+router.get('/professor/:id', jwt_1.authMiddleware, (req, res) => (0, utils_1.getByIdUtil)('teacher', req, res));
+router.delete('/professor/:id', jwt_1.authMiddleware, (req, res) => (0, utils_1.deleteItemUtil)('teacher', req, res));
+router.post('/professor', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return (0, utils_1.createUtil)('teacher', req, res); }));
+router.put('/professor/:id', jwt_1.authMiddleware, (req, res) => (0, utils_1.updateUtil)('teacher', req, res));
 exports.default = router;
