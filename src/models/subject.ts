@@ -6,14 +6,14 @@ const subjectType = {
   preRequests: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'subjectSchema',
+      ref: 'Subject',
       default: null,
     },
   ],
   sameRequests: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'subjectSchema',
+      ref: 'Subject',
       default: null,
     },
   ],

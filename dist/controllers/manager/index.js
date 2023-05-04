@@ -16,6 +16,8 @@ const express_1 = __importDefault(require("express"));
 const jwt_1 = require("../../middlewares/jwt");
 const login_1 = require("../login");
 const subject_1 = require("../../models/subject");
+const student_1 = __importDefault(require("../../models/student"));
+const student_2 = __importDefault(require("../../models/student"));
 const router = express_1.default.Router();
 router.post('/login', (req, res) => (0, login_1.loginHandler)('manager', req, res));
 router.post('/course', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -36,7 +38,7 @@ router.post('/course', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, voi
 }));
 router.get('/courses', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const courses = yield subject_1.Subject.find({});
+        const courses = yield subject_1.Subject.find({}).populate('preRequests').exec();
         res.status(200).send({ courses });
     }
     catch (error) {
@@ -45,11 +47,49 @@ router.get('/courses', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, voi
     }
 }));
 router.get('/course/:id', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const data = req.body;
     const { id } = req.params;
     try {
         const course = yield subject_1.Subject.findById(id).exec();
         res.status(200).send({ course });
+    }
+    catch (error) {
+        res.status(500).send({ message: 'server error' });
+    }
+}));
+router.get('/student/:id', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    try {
+        const student = yield student_1.default.findById(id).exec();
+        res.status(200).send({ student });
+    }
+    catch (error) {
+        res.status(500).send({ message: 'server error' });
+    }
+}));
+router.get('/students', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const students = yield student_1.default.find({});
+        res.status(200).send({ students });
+    }
+    catch (error) {
+        res.status(500).send({ message: 'server error' });
+    }
+}));
+router.get('/professors', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    try {
+        const professors = yield student_2.default.find({});
+        res.status(200).send({ professors });
+    }
+    catch (error) {
+        res.status(500).send({ message: 'server error' });
+    }
+}));
+router.get('/professor', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    try {
+        const professor = yield student_2.default.findById(id).exec();
+        res.status(200).send({ professor });
     }
     catch (error) {
         res.status(500).send({ message: 'server error' });

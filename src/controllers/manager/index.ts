@@ -6,6 +6,8 @@ import { ISubject } from 'models/_';
 
 import { loginHandler } from '../login';
 import { Subject } from '../../models/subject';
+import Student from '../../models/student';
+import Professor from '../../models/student';
 
 const router = express.Router();
 
@@ -31,7 +33,7 @@ router.post('/course', authMiddleware, async (req: Request, res: Response) => {
 
 router.get('/courses', authMiddleware, async (req: Request, res: Response) => {
   try {
-    const courses = await Subject.find({});
+    const courses = await Subject.find({}).populate('preRequests').exec();
     res.status(200).send({ courses });
   } catch (error) {
     console.log(error);
@@ -43,12 +45,65 @@ router.get(
   '/course/:id',
   authMiddleware,
   async (req: Request, res: Response) => {
-    const data = req.body as { id: string };
     const { id } = req.params;
 
     try {
       const course = await Subject.findById(id).exec();
       res.status(200).send({ course });
+    } catch (error) {
+      res.status(500).send({ message: 'server error' });
+    }
+  }
+);
+
+router.get(
+  '/student/:id',
+  authMiddleware,
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    try {
+      const student = await Student.findById(id).exec();
+      res.status(200).send({ student });
+    } catch (error) {
+      res.status(500).send({ message: 'server error' });
+    }
+  }
+);
+
+router.get('/students', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const students = await Student.find({});
+    res.status(200).send({ students });
+  } catch (error) {
+    res.status(500).send({ message: 'server error' });
+  }
+});
+
+router.get(
+  '/professors',
+  authMiddleware,
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    try {
+      const professors = await Professor.find({});
+      res.status(200).send({ professors });
+    } catch (error) {
+      res.status(500).send({ message: 'server error' });
+    }
+  }
+);
+
+router.get(
+  '/professor',
+  authMiddleware,
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    try {
+      const professor = await Professor.findById(id).exec();
+      res.status(200).send({ professor });
     } catch (error) {
       res.status(500).send({ message: 'server error' });
     }

@@ -31,14 +31,14 @@ const subjectType = {
     preRequests: [
         {
             type: mongoose_1.default.Schema.Types.ObjectId,
-            ref: 'subjectSchema',
+            ref: 'Subject',
             default: null,
         },
     ],
     sameRequests: [
         {
             type: mongoose_1.default.Schema.Types.ObjectId,
-            ref: 'subjectSchema',
+            ref: 'Subject',
             default: null,
         },
     ],
