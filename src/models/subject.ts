@@ -17,7 +17,6 @@ const subjectType = {
       default: null,
     },
   ],
-  faculty: { type: String, required: true },
 };
 
 const subjectSchema = new mongoose.Schema({
