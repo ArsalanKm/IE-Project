@@ -28,8 +28,20 @@ const mongoose_1 = __importStar(require("mongoose"));
 const subjectType = {
     name: { type: String, required: true },
     value: { type: Number, required: true },
-    preRequests: [this],
-    sameRequests: [this],
+    preRequests: [
+        {
+            type: mongoose_1.default.Schema.Types.ObjectId,
+            ref: 'subjectSchema',
+            default: null,
+        },
+    ],
+    sameRequests: [
+        {
+            type: mongoose_1.default.Schema.Types.ObjectId,
+            ref: 'subjectSchema',
+            default: null,
+        },
+    ],
 };
 const subjectSchema = new mongoose_1.default.Schema(Object.assign({}, subjectType));
 exports.Subject = mongoose_1.default.model('Subject', subjectSchema);

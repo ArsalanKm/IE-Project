@@ -94,7 +94,7 @@ router.put(
     const { id } = req.params;
 
     try {
-      const existUser = await Teacher.findByIdAndUpdate(id, data);
+      const existUser = await Teacher.findByIdAndUpdate(id, data).exec();
       if (!existUser) {
         res.status(400).send({ message: 'There is no user with that id' });
       }

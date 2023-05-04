@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
-import { AdminRouter } from './controllers';
+import { AdminRouter, ManagerRouter } from './controllers';
 import DB from './db';
 
 dotenv.config();
@@ -18,6 +18,8 @@ app.use(bodyParser.json());
 DB.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 app.use('/admin', AdminRouter);
+app.use('/manager', ManagerRouter);
+
 app.get('/', (req: Request, res: Response) => {
   res.send('Expresedsss + Typescript');
 });

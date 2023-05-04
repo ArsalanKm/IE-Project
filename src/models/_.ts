@@ -55,6 +55,8 @@ export const PersonSchemaType = {
   phoneNumber: { type: String, required: true },
 };
 
+export type LoginType = Pick<IPerson, 'universityId' | 'password'>;
+
 export const passwordMiddleware = (schema: Schema) => {
   schema.pre('save', function (next) {
     let user = this;

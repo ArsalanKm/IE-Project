@@ -80,7 +80,7 @@ router.put('/professor/:id', jwt_1.authMiddleware, (req, res) => __awaiter(void 
     const data = req.body;
     const { id } = req.params;
     try {
-        const existUser = yield teacher_1.default.findByIdAndUpdate(id, data);
+        const existUser = yield teacher_1.default.findByIdAndUpdate(id, data).exec();
         if (!existUser) {
             res.status(400).send({ message: 'There is no user with that id' });
         }

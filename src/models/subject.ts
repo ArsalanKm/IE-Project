@@ -3,8 +3,20 @@ import mongoose, { Schema } from 'mongoose';
 const subjectType = {
   name: { type: String, required: true },
   value: { type: Number, required: true },
-  preRequests: [this],
-  sameRequests: [this],
+  preRequests: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'subjectSchema',
+      default: null,
+    },
+  ],
+  sameRequests: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'subjectSchema',
+      default: null,
+    },
+  ],
 };
 
 const subjectSchema = new mongoose.Schema({
@@ -22,4 +34,7 @@ const semesterSubjectSchema = new mongoose.Schema({
   semester: { type: String, required: true },
 });
 
-export const SemesterSubject = mongoose.model('SemesterSubject', semesterSubjectSchema);
+export const SemesterSubject = mongoose.model(
+  'SemesterSubject',
+  semesterSubjectSchema
+);
