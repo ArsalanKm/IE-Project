@@ -1,9 +1,7 @@
 import express, { Request, Response } from 'express';
 
-import { IStudent } from 'models/_';
-
 import { authMiddleware } from '../../middlewares/jwt';
-import { loginHandler, getByIdUtil, getListUtil, updateUtil } from '../utils';
+import { loginHandler, updateUtil } from '../utils';
 import { Subject } from '../../models/subject';
 
 const router = express.Router();

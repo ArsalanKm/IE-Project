@@ -5,6 +5,7 @@ import { passwordMiddleware, PersonSchemaType } from './_';
 const managerSchema = passwordMiddleware(
   new mongoose.Schema({
     ...PersonSchemaType,
+    faculty: { type: String, required: true },
   })
 );
 
