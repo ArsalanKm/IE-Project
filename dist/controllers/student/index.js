@@ -16,12 +16,23 @@ const express_1 = __importDefault(require("express"));
 const jwt_1 = require("../../middlewares/jwt");
 const utils_1 = require("../utils");
 const subject_1 = require("../../models/subject");
+const student_1 = __importDefault(require("../../models/student"));
 const router = express_1.default.Router();
 router.post('/login', (req, res) => (0, utils_1.loginHandler)('student', req, res));
 router.get('/courses', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const courses = yield subject_1.Subject.find({}).populate('preRequests').exec();
-        res.status(200).send({ courses });
+        const { userId } = req.body;
+        if (userId) {
+            const student = yield student_1.default.findOne({ _id: userId }).exec();
+            console.log(student);
+            const courses = yield subject_1.Subject.find({})
+                .where({
+                field: student === null || student === void 0 ? void 0 : student.field,
+            })
+                .populate('preRequests')
+                .exec();
+            res.status(200).send({ courses });
+        }
     }
     catch (error) {
         console.log(error);

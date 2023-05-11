@@ -18,6 +18,8 @@ app.use(body_parser_1.default.json());
 db_1.default.on('error', console.error.bind(console, 'MongoDB connection error:'));
 app.use('/admin', controllers_1.AdminRouter);
 app.use('/manager', controllers_1.ManagerRouter);
+app.use('/teacher', controllers_1.TeacherRouter);
+app.use('/student', controllers_1.StudentRouter);
 app.get('/', (req, res) => {
     res.send('Expresedsss + Typescript');
 });

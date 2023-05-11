@@ -13,9 +13,11 @@ export const authMiddleware = (
     if (token) {
       const tokenData = validateToken(token);
       if (tokenData.valid) {
-        req.body.id = tokenData.id;
+        req.body.userId = tokenData.id;
         next();
       }
+    } else {
+      res.status(401).send({ message: 'UnAuthorized' });
     }
   } else {
     res.status(401).send({ message: 'UnAuthorized' });

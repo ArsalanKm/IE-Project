@@ -27,15 +27,17 @@ router.get('/professor', authMiddleware, (req: Request, res: Response) =>
 );
 
 router.post('/course', authMiddleware, async (req: Request, res: Response) => {
-  const { name, value, preRequests, sameRequests } = req.body as ISubject & {
-    id: string;
-  };
+  const { name, value, preRequests, sameRequests, field } =
+    req.body as ISubject & {
+      id: string;
+    };
   try {
     const subject = await new Subject({
       name,
       value,
       preRequests,
       sameRequests,
+      field,
     }).save();
     res.status(200).send({ message: 'created successfully', subject });
   } catch (error) {
@@ -49,15 +51,17 @@ router.put(
   authMiddleware,
   async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { name, value, preRequests, sameRequests } = req.body as ISubject & {
-      id: string;
-    };
+    const { name, value, preRequests, sameRequests, field } =
+      req.body as ISubject & {
+        id: string;
+      };
     try {
       const subject = await Subject.findByIdAndUpdate(id, {
         name,
         value,
         preRequests,
         sameRequests,
+        field,
       }).exec();
 
       if (!subject) {

@@ -3,6 +3,7 @@ import express, { Request, Response } from 'express';
 import { authMiddleware } from '../../middlewares/jwt';
 import { loginHandler, updateUtil } from '../utils';
 import { Subject } from '../../models/subject';
+import Student from '../../models/student';
 
 const router = express.Router();
 
@@ -10,8 +11,19 @@ router.post('/login', (req, res) => loginHandler('student', req, res));
 
 router.get('/courses', authMiddleware, async (req: Request, res: Response) => {
   try {
-    const courses = await Subject.find({}).populate('preRequests').exec();
-    res.status(200).send({ courses });
+    const { userId } = req.body;
+    if (userId) {
+      const student = await Student.findOne({ _id: userId }).exec();
+      console.log(student);
+
+      const courses = await Subject.find({})
+        .where({
+          field: student?.field,
+        })
+        .populate('preRequests')
+        .exec();
+      res.status(200).send({ courses });
+    }
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: error });

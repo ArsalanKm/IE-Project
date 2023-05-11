@@ -35,6 +35,7 @@ export interface ISubject {
   value: number;
   preRequests: string;
   sameRequests: string;
+  field: string;
 }
 
 export interface ISemesterSubject extends ISubject {

@@ -1,9 +1,7 @@
 import express, { Request, Response } from 'express';
 
-import { IManager } from 'models/_';
 
 import { authMiddleware } from '../../middlewares/jwt';
-import Manager from '../../models/manager';
 import {
   createUtil,
   updateUtil,

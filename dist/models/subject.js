@@ -42,6 +42,7 @@ const subjectType = {
             default: null,
         },
     ],
+    field: { type: String, required: true },
 };
 const subjectSchema = new mongoose_1.default.Schema(Object.assign({}, subjectType));
 exports.Subject = mongoose_1.default.model('Subject', subjectSchema);

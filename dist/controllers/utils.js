@@ -41,7 +41,7 @@ const loginHandler = (userType, req, res) => __awaiter(void 0, void 0, void 0, f
                     message: 'something went run while creating token',
                 });
             }
-            res.status(200).send({ message: 'admin logged in successfully', token });
+            res.status(200).send({ message: ' logged in successfully', token });
         }
         else {
             res.status(401).send({ message: 'There is no user with that name' });
@@ -56,8 +56,8 @@ const getByIdUtil = (userType, req, res) => __awaiter(void 0, void 0, void 0, fu
     const { id } = req.params;
     const model = userTypeUtil(userType);
     try {
-        const course = yield (model === null || model === void 0 ? void 0 : model.findById(id).exec());
-        res.status(200).send({ course });
+        const data = yield (model === null || model === void 0 ? void 0 : model.findById(id).exec());
+        res.status(200).send({ data });
     }
     catch (error) {
         res.status(500).send({ message: 'server error' });

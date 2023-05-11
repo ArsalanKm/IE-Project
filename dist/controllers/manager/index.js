@@ -23,13 +23,14 @@ router.get('/students', jwt_1.authMiddleware, (req, res) => (0, utils_1.getListU
 router.get('/professors', jwt_1.authMiddleware, (req, res) => (0, utils_1.getListUtil)('teacher', req, res));
 router.get('/professor', jwt_1.authMiddleware, (req, res) => (0, utils_1.getByIdUtil)('teacher', req, res));
 router.post('/course', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { name, value, preRequests, sameRequests } = req.body;
+    const { name, value, preRequests, sameRequests, field } = req.body;
     try {
         const subject = yield new subject_1.Subject({
             name,
             value,
             preRequests,
             sameRequests,
+            field,
         }).save();
         res.status(200).send({ message: 'created successfully', subject });
     }
@@ -40,13 +41,14 @@ router.post('/course', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, voi
 }));
 router.put('/course/:id', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    const { name, value, preRequests, sameRequests } = req.body;
+    const { name, value, preRequests, sameRequests, field } = req.body;
     try {
         const subject = yield subject_1.Subject.findByIdAndUpdate(id, {
             name,
             value,
             preRequests,
             sameRequests,
+            field,
         }).exec();
         if (!subject) {
             res.status(400).send({ message: 'There is no course with that id' });

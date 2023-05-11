@@ -4,7 +4,6 @@ import bcrypt from 'bcrypt';
 
 import {
   LoginType,
-  ISubject,
   IStudent,
   IPerson,
   IManager,
@@ -45,7 +44,7 @@ export const loginHandler = async (
           message: 'something went run while creating token',
         });
       }
-      res.status(200).send({ message: 'admin logged in successfully', token });
+      res.status(200).send({ message: ' logged in successfully', token });
     } else {
       res.status(401).send({ message: 'There is no user with that name' });
     }
@@ -63,8 +62,8 @@ export const getByIdUtil = async (
   const model = userTypeUtil(userType);
 
   try {
-    const course = await model?.findById(id).exec();
-    res.status(200).send({ course });
+    const data = await model?.findById(id).exec();
+    res.status(200).send({ data });
   } catch (error) {
     res.status(500).send({ message: 'server error' });
   }

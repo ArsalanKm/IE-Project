@@ -9,9 +9,12 @@ const authMiddleware = (req, res, next) => {
         if (token) {
             const tokenData = (0, jwt_1.validateToken)(token);
             if (tokenData.valid) {
-                req.body.id = tokenData.id;
+                req.body.userId = tokenData.id;
                 next();
             }
+        }
+        else {
+            res.status(401).send({ message: 'UnAuthorized' });
         }
     }
     else {
