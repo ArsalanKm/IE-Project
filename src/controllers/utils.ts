@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import { LoginType, IStudent, IPerson, IManager, ITeacher } from 'models/_';
+import { LoginType, IStudent, IManager, ITeacher } from 'models/_';
 
 import {
   loginValidator,
@@ -10,6 +10,8 @@ import {
   studentDataValidator,
   teacherDataValidator,
 } from '../utils/validator';
+
+import { generateAuthToken } from '../utils/jwt';
 
 import { ModelType, userTypeUtil, interfaceTypeUtil } from '../utils';
 
@@ -39,9 +41,7 @@ export const loginHandler = async (
       }
       let token;
       try {
-        token = jwt.sign({ id: user._id }, 'secret', {
-          expiresIn: '100d',
-        });
+        token = generateAuthToken(user._id as string);
       } catch (error) {
         res.status(500).send({
           message: 'something went run while creating token',

@@ -13,9 +13,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createUtil = exports.updateUtil = exports.deleteItemUtil = exports.getListUtil = exports.getByIdUtil = exports.loginHandler = void 0;
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const validator_1 = require("../utils/validator");
+const jwt_1 = require("../utils/jwt");
 const utils_1 = require("../utils");
 const loginHandler = (userType, req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const body = req.body;
@@ -35,9 +35,7 @@ const loginHandler = (userType, req, res) => __awaiter(void 0, void 0, void 0, f
             }
             let token;
             try {
-                token = jsonwebtoken_1.default.sign({ id: user._id }, 'secret', {
-                    expiresIn: '100d',
-                });
+                token = (0, jwt_1.generateAuthToken)(user._id);
             }
             catch (error) {
                 res.status(500).send({
