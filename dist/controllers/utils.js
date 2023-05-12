@@ -95,7 +95,7 @@ const deleteItemUtil = (userType, req, res) => __awaiter(void 0, void 0, void 0,
     }
 });
 exports.deleteItemUtil = deleteItemUtil;
-const updateUtil = (userType, req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateUtil = (userType, req, res, checkId = false) => __awaiter(void 0, void 0, void 0, function* () {
     const model = (0, utils_1.userTypeUtil)(userType);
     const data = (0, utils_1.interfaceTypeUtil)(req.body, userType);
     if (data) {
@@ -121,6 +121,11 @@ const updateUtil = (userType, req, res) => __awaiter(void 0, void 0, void 0, fun
         }
     }
     const { id } = req.params;
+    if (checkId) {
+        if (id !== req.body.userId) {
+            res.status(401).send({ message: 'Unauthoirzed user for edit entity' });
+        }
+    }
     try {
         const existUser = yield (model === null || model === void 0 ? void 0 : model.findByIdAndUpdate(id, data).exec());
         if (!existUser) {

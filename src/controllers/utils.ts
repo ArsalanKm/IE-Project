@@ -109,7 +109,8 @@ export const deleteItemUtil = async (
 export const updateUtil = async (
   userType: ModelType,
   req: Request,
-  res: Response
+  res: Response,
+  checkId = false
 ) => {
   const model = userTypeUtil(userType);
   const data = interfaceTypeUtil(req.body, userType);
@@ -136,6 +137,12 @@ export const updateUtil = async (
   }
 
   const { id } = req.params;
+
+  if (checkId) {
+    if (id !== req.body.userId) {
+      res.status(401).send({ message: 'Unauthoirzed user for edit entity' });
+    }
+  }
 
   try {
     const existUser = await model?.findByIdAndUpdate(id, data).exec();

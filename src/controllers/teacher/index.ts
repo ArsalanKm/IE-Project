@@ -1,12 +1,14 @@
 import express, { Request, Response, NextFunction } from 'express';
 
-import { updateUtil } from '../utils';
+import { updateUtil, loginHandler } from '../utils';
 import { authMiddleware } from '../../middlewares/jwt';
 import { authorizationMiddleware } from '../../middlewares/authorization';
 import { Subject } from '../../models/subject';
 import Teacher from '../../models/teacher';
 
 const router = express.Router();
+
+router.post('/login', (req, res) => loginHandler('teacher', req, res));
 
 router.get(
   '/courses',
@@ -18,7 +20,6 @@ router.get(
       const { userId } = req.body;
       if (userId) {
         const teacher = await Teacher.findById(userId).exec();
-        console.log(teacher);
 
         const courses = await Subject.find({})
           .where({
@@ -77,11 +78,11 @@ router.get(
 );
 
 router.put(
-  '/professor/:id',
+  '/:id',
   authMiddleware,
   (req: Request, res: Response, next: NextFunction) =>
     authorizationMiddleware('teacher', req, res, next),
-  (req: Request, res: Response) => updateUtil('teacher', req, res)
+  (req: Request, res: Response) => updateUtil('teacher', req, res, true)
 );
 
 export default router;

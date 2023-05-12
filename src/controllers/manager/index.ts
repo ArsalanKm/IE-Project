@@ -36,7 +36,7 @@ router.get(
 );
 
 router.get(
-  '/professor',
+  '/professor/:id',
   authMiddleware,
   (req: Request, res: Response, next: NextFunction) =>
     authorizationMiddleware('manager', req, res, next),

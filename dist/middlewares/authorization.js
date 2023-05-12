@@ -12,13 +12,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.authorizationMiddleware = void 0;
 const utils_1 = require("../utils");
 const authorizationMiddleware = (userType, req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('here');
     const { userId } = req.body;
-    console.log(userId);
     const model = (0, utils_1.userTypeUtil)(userType);
     try {
         const result = yield (model === null || model === void 0 ? void 0 : model.findById(userId).exec());
-        console.log(result);
         if (result) {
             next();
         }

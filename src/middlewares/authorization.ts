@@ -8,15 +8,11 @@ export const authorizationMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
-  console.log('here');
-
   const { userId } = req.body;
-  console.log(userId);
 
   const model = userTypeUtil(userType);
   try {
     const result = await model?.findById(userId).exec();
-    console.log(result);
 
     if (result) {
       next();

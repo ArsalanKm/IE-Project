@@ -20,7 +20,6 @@ router.get(
       const { userId } = req.body;
       if (userId) {
         const student = await Student.findById(userId).exec();
-        console.log(student);
 
         const courses = await Subject.find({})
           .where({
@@ -44,14 +43,10 @@ router.get(
     authorizationMiddleware('student', req, res, next),
   async (req: Request, res: Response) => {
     const { field } = req.query;
+
     try {
       const courses = field
-        ? await Subject.find({})
-            .where({
-              field: field as string,
-            })
-            .populate('preRequests')
-            .exec()
+        ? await Subject.find({ field }).populate('preRequests').exec()
         : await Subject.find({}).populate('preRequests').exec();
       res.status(200).send({ courses });
     } catch (error) {
@@ -79,11 +74,11 @@ router.get(
 );
 
 router.put(
-  '/student/:id',
+  '/:id',
   authMiddleware,
   (req: Request, res: Response, next: NextFunction) =>
     authorizationMiddleware('student', req, res, next),
-  (req: Request, res: Response) => updateUtil('student', req, res)
+  (req: Request, res: Response) => updateUtil('student', req, res, true)
 );
 
 export default router;

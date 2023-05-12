@@ -22,7 +22,7 @@ router.post('/login', (req, res) => (0, utils_1.loginHandler)('manager', req, re
 router.get('/student/:id', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => (0, utils_1.getByIdUtil)('student', req, res));
 router.get('/students', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => (0, utils_1.getListUtil)('student', req, res));
 router.get('/professors', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => (0, utils_1.getListUtil)('teacher', req, res));
-router.get('/professor', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => (0, utils_1.getByIdUtil)('teacher', req, res));
+router.get('/professor/:id', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => (0, utils_1.getByIdUtil)('teacher', req, res));
 router.post('/course', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, value, preRequests, sameRequests, field } = req.body;
     try {

@@ -25,7 +25,6 @@ router.get('/courses', jwt_1.authMiddleware, (req, res, next) => (0, authorizati
         const { userId } = req.body;
         if (userId) {
             const student = yield student_1.default.findById(userId).exec();
-            console.log(student);
             const courses = yield subject_1.Subject.find({})
                 .where({
                 field: student === null || student === void 0 ? void 0 : student.field,
@@ -44,12 +43,7 @@ router.get('/all-courses', jwt_1.authMiddleware, (req, res, next) => (0, authori
     const { field } = req.query;
     try {
         const courses = field
-            ? yield subject_1.Subject.find({})
-                .where({
-                field: field,
-            })
-                .populate('preRequests')
-                .exec()
+            ? yield subject_1.Subject.find({ field }).populate('preRequests').exec()
             : yield subject_1.Subject.find({}).populate('preRequests').exec();
         res.status(200).send({ courses });
     }
@@ -68,5 +62,5 @@ router.get('/course/:id', jwt_1.authMiddleware, (req, res, next) => (0, authoriz
         res.status(500).send({ message: 'server error' });
     }
 }));
-router.put('/student/:id', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('student', req, res, next), (req, res) => (0, utils_1.updateUtil)('student', req, res));
+router.put('/:id', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('student', req, res, next), (req, res) => (0, utils_1.updateUtil)('student', req, res, true));
 exports.default = router;

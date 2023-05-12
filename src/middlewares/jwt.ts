@@ -7,7 +7,6 @@ export const authMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  console.log('ss');
   
   const auth = req.headers.authorization;
   if (auth && auth.startsWith('Bearer')) {
@@ -15,7 +14,6 @@ export const authMiddleware = (
 
     if (token) {
       const tokenData = validateToken(token);
-      console.log({ tokenData });
 
       if (tokenData.valid) {
         req.body.userId = tokenData.id;

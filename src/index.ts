@@ -24,7 +24,7 @@ DB.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 app.use('/admin', AdminRouter);
 app.use('/manager', ManagerRouter);
-app.use('/teacher', TeacherRouter);
+app.use('/professor', TeacherRouter);
 app.use('/student', StudentRouter);
 
 app.get('/', (req: Request, res: Response) => {
