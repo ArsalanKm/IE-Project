@@ -15,19 +15,31 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const utils_1 = require("../utils");
 const jwt_1 = require("../../middlewares/jwt");
+const authorization_1 = require("../../middlewares/authorization");
 const subject_1 = require("../../models/subject");
+const teacher_1 = __importDefault(require("../../models/teacher"));
 const router = express_1.default.Router();
-router.get('/courses', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/courses', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('teacher', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const courses = yield subject_1.Subject.find({}).populate('preRequests').exec();
-        res.status(200).send({ courses });
+        const { userId } = req.body;
+        if (userId) {
+            const teacher = yield teacher_1.default.findById(userId).exec();
+            console.log(teacher);
+            const courses = yield subject_1.Subject.find({})
+                .where({
+                field: teacher === null || teacher === void 0 ? void 0 : teacher.field,
+            })
+                .populate('preRequests')
+                .exec();
+            res.status(200).send({ courses });
+        }
     }
     catch (error) {
         console.log(error);
         res.status(500).send({ message: error });
     }
 }));
-router.get('/course/:id', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/course/:id', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('teacher', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     try {
         const course = yield subject_1.Subject.findById(id).exec();
@@ -37,5 +49,23 @@ router.get('/course/:id', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, 
         res.status(500).send({ message: 'server error' });
     }
 }));
-router.put('/professor/:id', jwt_1.authMiddleware, (req, res) => (0, utils_1.updateUtil)('teacher', req, res));
+router.get('/all-courses', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('teacher', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { field } = req.query;
+    try {
+        const courses = field
+            ? yield subject_1.Subject.find({})
+                .where({
+                field: field,
+            })
+                .populate('preRequests')
+                .exec()
+            : yield subject_1.Subject.find({}).populate('preRequests').exec();
+        res.status(200).send({ courses });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send({ message: error });
+    }
+}));
+router.put('/professor/:id', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('teacher', req, res, next), (req, res) => (0, utils_1.updateUtil)('teacher', req, res));
 exports.default = router;

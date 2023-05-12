@@ -15,13 +15,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createUtil = exports.updateUtil = exports.deleteItemUtil = exports.getListUtil = exports.getByIdUtil = exports.loginHandler = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
-const admin_1 = __importDefault(require("../models/admin"));
-const teacher_1 = __importDefault(require("../models/teacher"));
-const student_1 = __importDefault(require("../models/student"));
-const manager_1 = __importDefault(require("../models/manager"));
+const validator_1 = require("../utils/validator");
+const utils_1 = require("../utils");
 const loginHandler = (userType, req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const body = req.body;
-    const model = userTypeUtil(userType);
+    const { valid, message } = (0, validator_1.loginValidator)(body);
+    if (!valid) {
+        res.status(400).send({ message });
+        return;
+    }
+    const model = (0, utils_1.userTypeUtil)(userType);
     try {
         const user = yield (model === null || model === void 0 ? void 0 : model.findOne({ universityId: body.universityId }));
         if (user) {
@@ -54,7 +57,7 @@ const loginHandler = (userType, req, res) => __awaiter(void 0, void 0, void 0, f
 exports.loginHandler = loginHandler;
 const getByIdUtil = (userType, req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    const model = userTypeUtil(userType);
+    const model = (0, utils_1.userTypeUtil)(userType);
     try {
         const data = yield (model === null || model === void 0 ? void 0 : model.findById(id).exec());
         res.status(200).send({ data });
@@ -65,7 +68,7 @@ const getByIdUtil = (userType, req, res) => __awaiter(void 0, void 0, void 0, fu
 });
 exports.getByIdUtil = getByIdUtil;
 const getListUtil = (userType, req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const model = userTypeUtil(userType);
+    const model = (0, utils_1.userTypeUtil)(userType);
     try {
         const data = yield (model === null || model === void 0 ? void 0 : model.find({}));
         res.status(200).send({ data });
@@ -76,7 +79,7 @@ const getListUtil = (userType, req, res) => __awaiter(void 0, void 0, void 0, fu
 });
 exports.getListUtil = getListUtil;
 const deleteItemUtil = (userType, req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const model = userTypeUtil(userType);
+    const model = (0, utils_1.userTypeUtil)(userType);
     const { id } = req.params;
     try {
         const result = yield (model === null || model === void 0 ? void 0 : model.findByIdAndDelete(id).exec());
@@ -93,8 +96,30 @@ const deleteItemUtil = (userType, req, res) => __awaiter(void 0, void 0, void 0,
 });
 exports.deleteItemUtil = deleteItemUtil;
 const updateUtil = (userType, req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const model = userTypeUtil(userType);
-    const data = interfaceTypeUtil(req.body, userType);
+    const model = (0, utils_1.userTypeUtil)(userType);
+    const data = (0, utils_1.interfaceTypeUtil)(req.body, userType);
+    if (data) {
+        let valid, message, result;
+        if (userType === 'admin') {
+            result = (0, validator_1.personDataValidator)(data);
+        }
+        else if (userType === 'manager') {
+            result = (0, validator_1.managerDataValidator)(data);
+        }
+        else if (userType === 'student') {
+            result = (0, validator_1.studentDataValidator)(data);
+        }
+        else {
+            result = (0, validator_1.teacherDataValidator)(data);
+        }
+        valid = result.valid;
+        message = result.message;
+        if (!valid) {
+            // ts-ignore
+            res.status(400).send({ message });
+            return;
+        }
+    }
     const { id } = req.params;
     try {
         const existUser = yield (model === null || model === void 0 ? void 0 : model.findByIdAndUpdate(id, data).exec());
@@ -109,8 +134,30 @@ const updateUtil = (userType, req, res) => __awaiter(void 0, void 0, void 0, fun
 });
 exports.updateUtil = updateUtil;
 const createUtil = (userType, req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const model = userTypeUtil(userType);
-    const data = interfaceTypeUtil(req.body, userType);
+    const model = (0, utils_1.userTypeUtil)(userType);
+    const data = (0, utils_1.interfaceTypeUtil)(req.body, userType);
+    if (data) {
+        let valid, message, result;
+        if (userType === 'admin') {
+            result = (0, validator_1.personDataValidator)(data);
+        }
+        else if (userType === 'manager') {
+            result = (0, validator_1.managerDataValidator)(data);
+        }
+        else if (userType === 'student') {
+            result = (0, validator_1.studentDataValidator)(data);
+        }
+        else {
+            result = (0, validator_1.teacherDataValidator)(data);
+        }
+        valid = result.valid;
+        message = result.message;
+        if (!valid) {
+            // ts-ignore
+            res.status(400).send({ message });
+            return;
+        }
+    }
     const existUser = yield (model === null || model === void 0 ? void 0 : model.findOne({
         universityId: data === null || data === void 0 ? void 0 : data.universityId,
     }).exec());
@@ -129,43 +176,3 @@ const createUtil = (userType, req, res) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.createUtil = createUtil;
-const interfaceTypeUtil = (data, value) => {
-    let result;
-    switch (value) {
-        case 'admin':
-            result = data;
-            break;
-        case 'teacher':
-            result = data;
-            break;
-        case 'student':
-            result = data;
-            break;
-        case 'manager':
-            result = data;
-            break;
-        default:
-            break;
-    }
-    return result;
-};
-const userTypeUtil = (user) => {
-    let model;
-    switch (user) {
-        case 'admin':
-            model = admin_1.default;
-            break;
-        case 'teacher':
-            model = teacher_1.default;
-            break;
-        case 'student':
-            model = student_1.default;
-            break;
-        case 'manager':
-            model = manager_1.default;
-            break;
-        default:
-            break;
-    }
-    return model;
-};

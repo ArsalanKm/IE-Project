@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.subjectDataValidator = exports.managerDataValidator = exports.teacherDataValidator = exports.studentDataValidator = exports.personDataValidator = void 0;
+exports.loginValidator = exports.subjectDataValidator = exports.managerDataValidator = exports.teacherDataValidator = exports.studentDataValidator = exports.personDataValidator = void 0;
 const personDataValidator = (data) => {
     const { name, familyName, phoneNumber, password, universityId, email } = data;
     if (!name ||
@@ -114,3 +114,17 @@ const subjectDataValidator = (data) => {
     };
 };
 exports.subjectDataValidator = subjectDataValidator;
+const loginValidator = (data) => {
+    const { universityId, password } = data;
+    if (!universityId || !password) {
+        return {
+            message: 'fields should not be empty',
+            valid: false,
+        };
+    }
+    return {
+        message: '',
+        valid: true,
+    };
+};
+exports.loginValidator = loginValidator;

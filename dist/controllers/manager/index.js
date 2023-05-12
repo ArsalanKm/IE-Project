@@ -15,14 +15,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const subject_1 = require("../../models/subject");
 const jwt_1 = require("../../middlewares/jwt");
+const authorization_1 = require("../../middlewares/authorization");
 const utils_1 = require("../utils");
 const router = express_1.default.Router();
 router.post('/login', (req, res) => (0, utils_1.loginHandler)('manager', req, res));
-router.get('/student/:id', jwt_1.authMiddleware, (req, res) => (0, utils_1.getByIdUtil)('student', req, res));
-router.get('/students', jwt_1.authMiddleware, (req, res) => (0, utils_1.getListUtil)('student', req, res));
-router.get('/professors', jwt_1.authMiddleware, (req, res) => (0, utils_1.getListUtil)('teacher', req, res));
-router.get('/professor', jwt_1.authMiddleware, (req, res) => (0, utils_1.getByIdUtil)('teacher', req, res));
-router.post('/course', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/student/:id', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => (0, utils_1.getByIdUtil)('student', req, res));
+router.get('/students', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => (0, utils_1.getListUtil)('student', req, res));
+router.get('/professors', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => (0, utils_1.getListUtil)('teacher', req, res));
+router.get('/professor', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => (0, utils_1.getByIdUtil)('teacher', req, res));
+router.post('/course', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, value, preRequests, sameRequests, field } = req.body;
     try {
         const subject = yield new subject_1.Subject({
@@ -39,7 +40,7 @@ router.post('/course', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, voi
         res.status(500).send({ message: error });
     }
 }));
-router.put('/course/:id', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.put('/course/:id', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     const { name, value, preRequests, sameRequests, field } = req.body;
     try {
@@ -60,7 +61,7 @@ router.put('/course/:id', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, 
         res.status(500).send({ message: error });
     }
 }));
-router.delete('/course/:id', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.delete('/course/:id', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const data = req.body;
     const { id } = req.params;
     try {
@@ -76,7 +77,7 @@ router.delete('/course/:id', jwt_1.authMiddleware, (req, res) => __awaiter(void 
         res.status(500).send({ message: 'server error' });
     }
 }));
-router.get('/courses', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/courses', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const courses = yield subject_1.Subject.find({}).populate('preRequests').exec();
         res.status(200).send({ courses });
@@ -86,7 +87,7 @@ router.get('/courses', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, voi
         res.status(500).send({ message: error });
     }
 }));
-router.get('/course/:id', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/course/:id', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     try {
         const course = yield subject_1.Subject.findById(id).exec();

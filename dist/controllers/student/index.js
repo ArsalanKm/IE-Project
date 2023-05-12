@@ -14,16 +14,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const jwt_1 = require("../../middlewares/jwt");
+const authorization_1 = require("../../middlewares/authorization");
 const utils_1 = require("../utils");
 const subject_1 = require("../../models/subject");
 const student_1 = __importDefault(require("../../models/student"));
 const router = express_1.default.Router();
 router.post('/login', (req, res) => (0, utils_1.loginHandler)('student', req, res));
-router.get('/courses', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/courses', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('student', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { userId } = req.body;
         if (userId) {
-            const student = yield student_1.default.findOne({ _id: userId }).exec();
+            const student = yield student_1.default.findById(userId).exec();
             console.log(student);
             const courses = yield subject_1.Subject.find({})
                 .where({
@@ -39,7 +40,25 @@ router.get('/courses', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, voi
         res.status(500).send({ message: error });
     }
 }));
-router.get('/course/:id', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/all-courses', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('student', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { field } = req.query;
+    try {
+        const courses = field
+            ? yield subject_1.Subject.find({})
+                .where({
+                field: field,
+            })
+                .populate('preRequests')
+                .exec()
+            : yield subject_1.Subject.find({}).populate('preRequests').exec();
+        res.status(200).send({ courses });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send({ message: error });
+    }
+}));
+router.get('/course/:id', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('student', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     try {
         const course = yield subject_1.Subject.findById(id).exec();
@@ -49,5 +68,5 @@ router.get('/course/:id', jwt_1.authMiddleware, (req, res) => __awaiter(void 0, 
         res.status(500).send({ message: 'server error' });
     }
 }));
-router.put('/student/:id', jwt_1.authMiddleware, (req, res) => (0, utils_1.updateUtil)('student', req, res));
+router.put('/student/:id', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('student', req, res, next), (req, res) => (0, utils_1.updateUtil)('student', req, res));
 exports.default = router;

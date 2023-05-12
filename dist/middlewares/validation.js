@@ -22,9 +22,6 @@ const requestValidatorMiddleware = (model, req, res, next) => {
         case 'manager':
             data = (0, validator_1.managerDataValidator)(body);
             break;
-        default:
-            data = (0, validator_1.personDataValidator)(body);
-            break;
     }
     if (data === null || data === void 0 ? void 0 : data.valid) {
         next();

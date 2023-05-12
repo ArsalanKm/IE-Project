@@ -5,7 +5,9 @@ export interface IValidation {
   message: string;
 }
 
-export const personDataValidator = (data: IPerson): IValidation => {
+export const personDataValidator = (
+  data: IPerson & { userId: string }
+): IValidation => {
   const { name, familyName, phoneNumber, password, universityId, email } = data;
 
   if (
@@ -28,8 +30,12 @@ export const personDataValidator = (data: IPerson): IValidation => {
   };
 };
 
-export const studentDataValidator = (data: IStudent): IValidation => {
-  const { valid, message } = personDataValidator(data as IPerson);
+export const studentDataValidator = (
+  data: IStudent & { userId: string }
+): IValidation => {
+  const { valid, message } = personDataValidator(
+    data as IPerson & { userId: string }
+  );
   if (!valid) {
     return {
       valid,
@@ -71,8 +77,12 @@ export const studentDataValidator = (data: IStudent): IValidation => {
   };
 };
 
-export const teacherDataValidator = (data: ITeacher): IValidation => {
-  const { valid, message } = personDataValidator(data as IPerson);
+export const teacherDataValidator = (
+  data: ITeacher & { userId: string }
+): IValidation => {
+  const { valid, message } = personDataValidator(
+    data as IPerson & { userId: string }
+  );
   if (!valid) {
     return {
       valid,
@@ -92,8 +102,12 @@ export const teacherDataValidator = (data: ITeacher): IValidation => {
   };
 };
 
-export const managerDataValidator = (data: IManager): IValidation => {
-  const { valid, message } = personDataValidator(data as IPerson);
+export const managerDataValidator = (
+  data: IManager & { userId: string }
+): IValidation => {
+  const { valid, message } = personDataValidator(
+    data as IPerson & { userId: string }
+  );
   if (!valid) {
     return {
       valid,
@@ -113,7 +127,9 @@ export const managerDataValidator = (data: IManager): IValidation => {
   };
 };
 
-export const subjectDataValidator = (data: ISubject): IValidation => {
+export const subjectDataValidator = (
+  data: ISubject & { userId: string }
+): IValidation => {
   const { name, value } = data;
 
   if (!name || !value) {
@@ -126,5 +142,22 @@ export const subjectDataValidator = (data: ISubject): IValidation => {
   return {
     valid: true,
     message: '',
+  };
+};
+
+export const loginValidator = (data: {
+  universityId: string;
+  password: string;
+}): IValidation => {
+  const { universityId, password } = data;
+  if (!universityId || !password) {
+    return {
+      message: 'fields should not be empty',
+      valid: false,
+    };
+  }
+  return {
+    message: '',
+    valid: true,
   };
 };

@@ -1,20 +1,17 @@
-import express, { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import { LoginType, IStudent, IPerson, IManager, ITeacher } from 'models/_';
 
 import {
-  LoginType,
-  IStudent,
-  IPerson,
-  IManager,
-  ITeacher,
-} from 'models/_';
-import Admin from '../models/admin';
-import Teacher from '../models/teacher';
-import Student from '../models/student';
-import Manager from '../models/manager';
+  loginValidator,
+  managerDataValidator,
+  personDataValidator,
+  studentDataValidator,
+  teacherDataValidator,
+} from '../utils/validator';
 
-type ModelType = 'admin' | 'teacher' | 'student' | 'manager';
+import { ModelType, userTypeUtil, interfaceTypeUtil } from '../utils';
 
 export const loginHandler = async (
   userType: ModelType,
@@ -22,6 +19,12 @@ export const loginHandler = async (
   res: Response
 ) => {
   const body = req.body as LoginType;
+  const { valid, message } = loginValidator(body);
+
+  if (!valid) {
+    res.status(400).send({ message });
+    return;
+  }
 
   const model = userTypeUtil(userType);
 
@@ -111,6 +114,27 @@ export const updateUtil = async (
   const model = userTypeUtil(userType);
   const data = interfaceTypeUtil(req.body, userType);
 
+  if (data) {
+    let valid, message, result;
+    if (userType === 'admin') {
+      result = personDataValidator(data);
+    } else if (userType === 'manager') {
+      result = managerDataValidator(data as IManager & { userId: string });
+    } else if (userType === 'student') {
+      result = studentDataValidator(data as IStudent & { userId: string });
+    } else {
+      result = teacherDataValidator(data as ITeacher & { userId: string });
+    }
+
+    valid = result.valid;
+    message = result.message;
+    if (!valid) {
+      // ts-ignore
+      res.status(400).send({ message });
+      return;
+    }
+  }
+
   const { id } = req.params;
 
   try {
@@ -132,7 +156,26 @@ export const createUtil = async (
   const model = userTypeUtil(userType);
 
   const data = interfaceTypeUtil(req.body, userType);
+  if (data) {
+    let valid, message, result;
+    if (userType === 'admin') {
+      result = personDataValidator(data);
+    } else if (userType === 'manager') {
+      result = managerDataValidator(data as IManager & { userId: string });
+    } else if (userType === 'student') {
+      result = studentDataValidator(data as IStudent & { userId: string });
+    } else {
+      result = teacherDataValidator(data as ITeacher & { userId: string });
+    }
 
+    valid = result.valid;
+    message = result.message;
+    if (!valid) {
+      // ts-ignore
+      res.status(400).send({ message });
+      return;
+    }
+  }
   const existUser = await model
     ?.findOne({
       universityId: data?.universityId,
@@ -151,47 +194,4 @@ export const createUtil = async (
   } catch (error) {
     res.status(500).send({ message: error });
   }
-};
-
-const interfaceTypeUtil = (data: any, value: ModelType) => {
-  let result;
-  switch (value) {
-    case 'admin':
-      result = data as IPerson & { id: string };
-      break;
-    case 'teacher':
-      result = data as ITeacher & { id: string };
-      break;
-    case 'student':
-      result = data as IStudent & { id: string };
-      break;
-    case 'manager':
-      result = data as IManager & { id: string };
-      break;
-
-    default:
-      break;
-  }
-  return result;
-};
-const userTypeUtil = (user: ModelType) => {
-  let model;
-  switch (user) {
-    case 'admin':
-      model = Admin;
-      break;
-    case 'teacher':
-      model = Teacher;
-      break;
-    case 'student':
-      model = Student;
-      break;
-    case 'manager':
-      model = Manager;
-      break;
-
-    default:
-      break;
-  }
-  return model;
 };

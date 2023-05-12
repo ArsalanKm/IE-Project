@@ -1,9 +1,8 @@
-import express, { Request, Response } from 'express';
-
-import { ITeacher } from 'models/_';
+import express, { Request, Response, NextFunction } from 'express';
 
 import { authMiddleware } from '../../middlewares/jwt';
-import Teacher from '../../models/teacher';
+import { authorizationMiddleware } from '../../middlewares/authorization';
+
 import {
   createUtil,
   deleteItemUtil,
@@ -14,23 +13,43 @@ import {
 
 const router = express.Router();
 
-router.get('/professors', authMiddleware, (req: Request, res: Response) =>
-  getListUtil('teacher', req, res)
+router.get(
+  '/professors',
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('teacher', req, res, next),
+  (req: Request, res: Response) => getListUtil('teacher', req, res)
 );
 
-router.get('/professor/:id', authMiddleware, (req: Request, res: Response) =>
-  getByIdUtil('teacher', req, res)
+router.get(
+  '/professor/:id',
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('teacher', req, res, next),
+  (req: Request, res: Response) => getByIdUtil('teacher', req, res)
 );
 
-router.delete('/professor/:id', authMiddleware, (req: Request, res: Response) =>
-  deleteItemUtil('teacher', req, res)
+router.delete(
+  '/professor/:id',
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('teacher', req, res, next),
+  (req: Request, res: Response) => deleteItemUtil('teacher', req, res)
 );
 
-router.post('/professor', authMiddleware, async (req: Request, res: Response) =>
-  createUtil('teacher', req, res)
+router.post(
+  '/professor',
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('teacher', req, res, next),
+  async (req: Request, res: Response) => createUtil('teacher', req, res)
 );
-router.put('/professor/:id', authMiddleware, (req: Request, res: Response) =>
-  updateUtil('teacher', req, res)
+router.put(
+  '/professor/:id',
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('teacher', req, res, next),
+  (req: Request, res: Response) => updateUtil('teacher', req, res)
 );
 
 export default router;

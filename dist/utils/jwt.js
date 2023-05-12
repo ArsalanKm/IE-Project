@@ -12,11 +12,17 @@ const generateAuthToken = (id) => {
 };
 exports.generateAuthToken = generateAuthToken;
 const validateToken = (token) => {
-    const tokenData = jsonwebtoken_1.default.verify(token, jwtKey);
-    if (tokenData) {
-        return { id: tokenData.id, valid: true };
+    try {
+        const tokenData = jsonwebtoken_1.default.verify(token, jwtKey);
+        if (tokenData) {
+            return { id: tokenData.id, valid: true };
+        }
+        else {
+            return { valid: false, id: '' };
+        }
     }
-    else {
+    catch (error) {
+        console.log('invalid token');
         return { valid: false, id: '' };
     }
 };

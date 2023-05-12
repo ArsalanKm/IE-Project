@@ -1,9 +1,11 @@
 import mongoose from 'mongoose';
+import dotevn from 'dotenv';
 
-const connectionString = 'mongodb://0.0.0.0:27017/';
+dotevn.config();
+const { DB_URL, DB_NAME } = process.env;
 
 mongoose
-  .connect(connectionString, { dbName: 'mern-app' })
+  .connect(DB_URL || '', { dbName: DB_NAME })
   .then(() => console.log('successfully connected to database'))
   .catch((e) => console.error('Connection error to database', e));
 

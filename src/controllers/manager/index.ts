@@ -1,8 +1,9 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 
 import { ISubject } from 'models/_';
 import { Subject } from '../../models/subject';
 import { authMiddleware } from '../../middlewares/jwt';
+import { authorizationMiddleware } from '../../middlewares/authorization';
 
 import { loginHandler, getByIdUtil, getListUtil } from '../utils';
 
@@ -10,45 +11,69 @@ const router = express.Router();
 
 router.post('/login', (req, res) => loginHandler('manager', req, res));
 
-router.get('/student/:id', authMiddleware, (req: Request, res: Response) =>
-  getByIdUtil('student', req, res)
+router.get(
+  '/student/:id',
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('manager', req, res, next),
+  (req: Request, res: Response) => getByIdUtil('student', req, res)
 );
 
-router.get('/students', authMiddleware, (req: Request, res: Response) =>
-  getListUtil('student', req, res)
+router.get(
+  '/students',
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('manager', req, res, next),
+  (req: Request, res: Response) => getListUtil('student', req, res)
 );
 
-router.get('/professors', authMiddleware, (req: Request, res: Response) =>
-  getListUtil('teacher', req, res)
+router.get(
+  '/professors',
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('manager', req, res, next),
+  (req: Request, res: Response) => getListUtil('teacher', req, res)
 );
 
-router.get('/professor', authMiddleware, (req: Request, res: Response) =>
-  getByIdUtil('teacher', req, res)
+router.get(
+  '/professor',
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('manager', req, res, next),
+  (req: Request, res: Response) => getByIdUtil('teacher', req, res)
 );
 
-router.post('/course', authMiddleware, async (req: Request, res: Response) => {
-  const { name, value, preRequests, sameRequests, field } =
-    req.body as ISubject & {
-      id: string;
-    };
-  try {
-    const subject = await new Subject({
-      name,
-      value,
-      preRequests,
-      sameRequests,
-      field,
-    }).save();
-    res.status(200).send({ message: 'created successfully', subject });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({ message: error });
+router.post(
+  '/course',
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('manager', req, res, next),
+  async (req: Request, res: Response) => {
+    const { name, value, preRequests, sameRequests, field } =
+      req.body as ISubject & {
+        id: string;
+      };
+    try {
+      const subject = await new Subject({
+        name,
+        value,
+        preRequests,
+        sameRequests,
+        field,
+      }).save();
+      res.status(200).send({ message: 'created successfully', subject });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({ message: error });
+    }
   }
-});
+);
 
 router.put(
   '/course/:id',
   authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('manager', req, res, next),
   async (req: Request, res: Response) => {
     const { id } = req.params;
     const { name, value, preRequests, sameRequests, field } =
@@ -78,6 +103,8 @@ router.put(
 router.delete(
   '/course/:id',
   authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('manager', req, res, next),
   async (req: Request, res: Response) => {
     const data = req.body as { id: string };
     const { id } = req.params;
@@ -95,19 +122,27 @@ router.delete(
   }
 );
 
-router.get('/courses', authMiddleware, async (req: Request, res: Response) => {
-  try {
-    const courses = await Subject.find({}).populate('preRequests').exec();
-    res.status(200).send({ courses });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({ message: error });
+router.get(
+  '/courses',
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('manager', req, res, next),
+  async (req: Request, res: Response) => {
+    try {
+      const courses = await Subject.find({}).populate('preRequests').exec();
+      res.status(200).send({ courses });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({ message: error });
+    }
   }
-});
+);
 
 router.get(
   '/course/:id',
   authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('manager', req, res, next),
   async (req: Request, res: Response) => {
     const { id } = req.params;
 

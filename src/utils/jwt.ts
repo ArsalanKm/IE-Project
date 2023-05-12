@@ -10,10 +10,15 @@ export const generateAuthToken = (id: string): string => {
 export const validateToken = (
   token: string
 ): { valid: boolean; id: string } => {
-  const tokenData = jwt.verify(token, jwtKey) as { id: string };
-  if (tokenData) {
-    return { id: tokenData.id, valid: true };
-  } else {
+  try {
+    const tokenData = jwt.verify(token, jwtKey) as { id: string };
+    if (tokenData) {
+      return { id: tokenData.id, valid: true };
+    } else {
+      return { valid: false, id: '' };
+    }
+  } catch (error) {
+    console.log('invalid token');
     return { valid: false, id: '' };
   }
 };

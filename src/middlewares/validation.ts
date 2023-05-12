@@ -22,19 +22,16 @@ export const requestValidatorMiddleware = (
   }
   switch (model) {
     case 'person':
-      data = personDataValidator(body as IPerson);
+      data = personDataValidator(body as IPerson & { userId: string });
       break;
     case 'teacher':
-      data = teacherDataValidator(body as ITeacher);
+      data = teacherDataValidator(body as ITeacher & { userId: string });
       break;
     case 'subject':
-      data = subjectDataValidator(body as ISubject);
+      data = subjectDataValidator(body as ISubject & { userId: string });
       break;
     case 'manager':
-      data = managerDataValidator(body as IManager);
-      break;
-    default:
-      data = personDataValidator(body as IManager);
+      data = managerDataValidator(body as IManager & { userId: string });
       break;
   }
   if (data?.valid) {
