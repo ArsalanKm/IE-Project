@@ -14,6 +14,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const utils_1 = require("../utils");
+const jwt_1 = require("../../middlewares/jwt");
+const authorization_1 = require("../../middlewares/authorization");
+const subject_1 = require("../../models/subject");
 const professor_1 = __importDefault(require("./professor"));
 const student_1 = __importDefault(require("./student"));
 const manager_1 = __importDefault(require("./manager"));
@@ -24,4 +27,14 @@ router.use(student_1.default);
 router.use(manager_1.default);
 router.post('/create-admin', (req, res) => __awaiter(void 0, void 0, void 0, function* () { return (0, utils_1.createUtil)('admin', req, res); }));
 router.post('/login', (req, res) => (0, utils_1.loginHandler)('admin', req, res));
+router.get('/courses', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('admin', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const courses = yield subject_1.Subject.find({}).populate('preRequests').exec();
+        res.status(200).send({ courses });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send({ message: error });
+    }
+}));
 exports.default = router;

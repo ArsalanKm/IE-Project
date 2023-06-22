@@ -32,6 +32,7 @@ export const loginHandler = async (
 
   try {
     const user = await model?.findOne({ universityId: body.universityId });
+    
     if (user) {
       const isValidPass = await bcrypt.compare(body.password, user.password);
 

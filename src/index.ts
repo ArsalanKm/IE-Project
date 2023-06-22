@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import morgan from 'morgan'
 
 import {
   AdminRouter,
@@ -14,6 +15,9 @@ import DB from './db';
 dotenv.config();
 
 const app: Express = express();
+app.use(morgan('common'));
+
+
 const port = process.env.PORT;
 
 app.use(bodyParser.urlencoded({ extended: true }));
