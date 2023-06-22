@@ -5,6 +5,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const _1 = require("./_");
-const adminSchema = (0, _1.passwordMiddleware)(new mongoose_1.default.Schema(Object.assign({}, _1.PersonSchemaType)));
+const adminSchema = (0, _1.passwordMiddleware)(new mongoose_1.default.Schema(Object.assign({}, _1.PersonSchemaType), {
+    toJSON: {
+        transform(doc, ret) {
+            ret.id = ret._id;
+            delete ret._id;
+        },
+    },
+}));
 const Admin = mongoose_1.default.model('Admin', adminSchema);
 exports.default = Admin;

@@ -25,15 +25,25 @@ const subjectSchema = new mongoose.Schema({
 });
 export const Subject = mongoose.model('Subject', subjectSchema);
 
-const semesterSubjectSchema = new mongoose.Schema({
-  ...subjectType,
-  classTime: { type: String, required: true },
-  examTime: { type: String, required: true },
-  examLocation: { type: String, required: true },
-  teacher: { type: Schema.Types.ObjectId, ref: 'Teacher' },
-  capacity: { type: String, required: true },
-  semester: { type: String, required: true },
-});
+const semesterSubjectSchema = new mongoose.Schema(
+  {
+    ...subjectType,
+    classTime: { type: String, required: true },
+    examTime: { type: String, required: true },
+    examLocation: { type: String, required: true },
+    teacher: { type: Schema.Types.ObjectId, ref: 'Teacher' },
+    capacity: { type: String, required: true },
+    semester: { type: String, required: true },
+  },
+  {
+    toJSON: {
+      transform(doc, ret) {
+        ret.id = ret._id;
+        delete ret._id;
+      },
+    },
+  }
+);
 
 export const SemesterSubject = mongoose.model(
   'SemesterSubject',

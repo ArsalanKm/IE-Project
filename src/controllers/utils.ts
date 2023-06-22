@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
-import { LoginType, IStudent, IManager, ITeacher } from 'models/_';
+import { LoginType, IStudent, IManager, ITeacher, IPerson } from 'models/_';
 
 import {
   loginValidator,
@@ -32,7 +32,7 @@ export const loginHandler = async (
 
   try {
     const user = await model?.findOne({ universityId: body.universityId });
-    
+
     if (user) {
       const isValidPass = await bcrypt.compare(body.password, user.password);
 
@@ -119,7 +119,7 @@ export const updateUtil = async (
   if (data) {
     let valid, message, result;
     if (userType === 'admin') {
-      result = personDataValidator(data);
+      result = personDataValidator(data as IPerson & { userId: string });
     } else if (userType === 'manager') {
       result = managerDataValidator(data as IManager & { userId: string });
     } else if (userType === 'student') {
@@ -167,17 +167,17 @@ export const createUtil = async (
   if (data) {
     let valid, message, result;
     if (userType === 'admin') {
-      result = personDataValidator(data);
+      result = personDataValidator(data as IPerson & { userId: string });
     } else if (userType === 'manager') {
       result = managerDataValidator(data as IManager & { userId: string });
     } else if (userType === 'student') {
       result = studentDataValidator(data as IStudent & { userId: string });
-    } else {
+    } else if (userType === 'teacher') {
       result = teacherDataValidator(data as ITeacher & { userId: string });
     }
 
-    valid = result.valid;
-    message = result.message;
+    valid = result?.valid;
+    message = result?.message;
     if (!valid) {
       // ts-ignore
       res.status(400).send({ message });
@@ -186,7 +186,7 @@ export const createUtil = async (
   }
   const existUser = await model
     ?.findOne({
-      universityId: data?.universityId,
+      _id: data?.id,
     })
     .exec();
 

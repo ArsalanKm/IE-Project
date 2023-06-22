@@ -1,8 +1,10 @@
 import mongoose, { Schema } from 'mongoose';
 import bcrypt from 'bcrypt';
+
 const SALT_WORK_FACTOR = 10;
 
 export interface IPerson {
+  id: string;
   name: string;
   password: string;
   familyName: string;
@@ -12,6 +14,7 @@ export interface IPerson {
 }
 
 export interface IStudent extends IPerson {
+  id: string;
   educationDegree: string;
   enteranceYear: string;
   semester: string;
@@ -21,16 +24,19 @@ export interface IStudent extends IPerson {
 }
 
 export interface ITeacher extends IPerson {
+  id: string;
   faculty: string;
   field: string;
   rank: string;
 }
 
 export interface IManager extends IPerson {
+  id: string;
   faculty: string;
 }
 
 export interface ISubject {
+  id: string;
   name: string;
   value: number;
   preRequests: string;
@@ -38,7 +44,15 @@ export interface ISubject {
   field: string;
 }
 
+export interface ITerm {
+  id: string;
+  name: string;
+  termUsersId: Array<Number>;
+  termCourses: Array<ISemesterSubject>;
+  preRequestTermCourses: Array<ISemesterSubject>;
+}
 export interface ISemesterSubject extends ISubject {
+  id: string;
   classTime: string;
   examTime: string;
   examLocation: string;

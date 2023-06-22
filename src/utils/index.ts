@@ -22,21 +22,19 @@ export const userTypeUtil = (user: ModelType) => {
     case 'manager':
       model = Manager;
       break;
-
     default:
       break;
   }
   return model;
 };
 
-export const interfaceTypeUtil = (
-  data: any,
-  value: ModelType
-):
-  | (IPerson & { userId: string })
-  | (ITeacher & { userId: string })
-  | (IStudent & { userId: string })
-  | (IManager & { userId: string }) => {
+type returnType =
+  | ((IPerson | ITeacher | IStudent | IManager) & {
+      userId: string;
+    })
+  | undefined;
+
+export const interfaceTypeUtil = (data: any, value: ModelType): returnType => {
   let result;
   switch (value) {
     case 'admin':

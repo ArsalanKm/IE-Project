@@ -150,11 +150,11 @@ const createUtil = (userType, req, res) => __awaiter(void 0, void 0, void 0, fun
         else if (userType === 'student') {
             result = (0, validator_1.studentDataValidator)(data);
         }
-        else {
+        else if (userType === 'teacher') {
             result = (0, validator_1.teacherDataValidator)(data);
         }
-        valid = result.valid;
-        message = result.message;
+        valid = result === null || result === void 0 ? void 0 : result.valid;
+        message = result === null || result === void 0 ? void 0 : result.message;
         if (!valid) {
             // ts-ignore
             res.status(400).send({ message });
@@ -162,7 +162,7 @@ const createUtil = (userType, req, res) => __awaiter(void 0, void 0, void 0, fun
         }
     }
     const existUser = yield (model === null || model === void 0 ? void 0 : model.findOne({
-        universityId: data === null || data === void 0 ? void 0 : data.universityId,
+        _id: data === null || data === void 0 ? void 0 : data.id,
     }).exec());
     if (existUser) {
         res
