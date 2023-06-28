@@ -39,9 +39,9 @@ router.delete(
 
 router.post(
   '/professor',
-  authMiddleware,
-  (req: Request, res: Response, next: NextFunction) =>
-    authorizationMiddleware('admin', req, res, next),
+  // authMiddleware,
+  // (req: Request, res: Response, next: NextFunction) =>
+  //   authorizationMiddleware('admin', req, res, next),
   async (req: Request, res: Response) => createUtil('teacher', req, res)
 );
 router.put(

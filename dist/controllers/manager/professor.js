@@ -10,3 +10,4 @@ const authorization_1 = require("../../middlewares/authorization");
 const router = express_1.default.Router();
 router.get('/professors', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => (0, utils_1.getListUtil)('teacher', req, res));
 router.get('/professor/:id', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => (0, utils_1.getByIdUtil)('teacher', req, res));
+exports.default = router;

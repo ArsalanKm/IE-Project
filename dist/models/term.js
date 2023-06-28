@@ -6,18 +6,33 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const termSchema = new mongoose_1.default.Schema({
     name: { type: String, required: true },
-    termUsersId: [Number],
+    termUsersId: [
+        {
+            type: mongoose_1.default.Schema.Types.ObjectId,
+            ref: 'Student',
+        },
+        {
+            type: mongoose_1.default.Schema.Types.ObjectId,
+            ref: 'Student',
+        },
+    ],
     termCourses: [
         {
             type: mongoose_1.default.Schema.Types.ObjectId,
             ref: 'SemesterSubject',
         },
     ],
-    preRequestTermCourses: [
+    preRegistrationCourses: [
         {
             type: mongoose_1.default.Schema.Types.ObjectId,
             ref: 'SemesterSubject',
         },
+    ],
+    preRegistrationRequests: [
+        { type: mongoose_1.default.Schema.Types.ObjectId, ref: 'RegisterRequest' },
+    ],
+    RegistratoinRequests: [
+        { type: mongoose_1.default.Schema.Types.ObjectId, ref: 'PreRegisterRequest' },
     ],
 }, {
     toJSON: {

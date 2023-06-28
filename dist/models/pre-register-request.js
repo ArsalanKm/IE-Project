@@ -4,9 +4,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
-const student_1 = __importDefault(require("./student"));
 const preRequestSchema = new mongoose_1.default.Schema({
-    student: { type: student_1.default },
+    student: {
+        type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: 'Student',
+    },
     courses: [
         {
             type: mongoose_1.default.Schema.Types.ObjectId,

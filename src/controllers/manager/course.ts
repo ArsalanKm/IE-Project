@@ -1,32 +1,69 @@
 import express, { Request, Response, NextFunction } from 'express';
 
-import { ISubject, ITerm } from 'models/_';
-import { Subject } from '../../models/subject';
+import { ISemesterSubject, ISubject, ITerm } from 'models/_';
+import { Subject, SemesterSubject } from '../../models/subject';
 import { authMiddleware } from '../../middlewares/jwt';
 import { authorizationMiddleware } from '../../middlewares/authorization';
 
-import Term from '../../models/term';
-import { loginHandler, getByIdUtil, getListUtil } from '../utils';
-
 const router = express.Router();
 
+// router.post(
+//   '/course',
+//   authMiddleware,
+//   (req: Request, res: Response, next: NextFunction) =>
+//     authorizationMiddleware('manager', req, res, next),
+//   async (req: Request, res: Response) => {
+//     const { name, value, preRequests, sameRequests, field } =
+//       req.body as ISubject & {
+//         id: string;
+//       };
+//     try {
+//       const subject = await new Subject({
+//         name,
+//         value,
+//         preRequests,
+//         sameRequests,
+//         field,
+//       }).save();
+//       res.status(200).send({ message: 'created successfully', subject });
+//     } catch (error) {
+//       console.log(error);
+//       res.status(500).send({ message: error });
+//     }
+//   }
+// );
 router.post(
   '/course',
-  authMiddleware,
-  (req: Request, res: Response, next: NextFunction) =>
-    authorizationMiddleware('manager', req, res, next),
+  // authMiddleware,
+  // (req: Request, res: Response, next: NextFunction) =>
+  //   authorizationMiddleware('manager', req, res, next),
   async (req: Request, res: Response) => {
-    const { name, value, preRequests, sameRequests, field } =
-      req.body as ISubject & {
-        id: string;
-      };
+    const {
+      name,
+      value,
+      preRequests,
+      sameRequests,
+      field,
+      classTime,
+      examTime,
+      examLocation,
+      teacher,
+      capacity,
+      semester,
+    } = req.body as ISemesterSubject;
     try {
-      const subject = await new Subject({
+      const subject = await new SemesterSubject({
         name,
         value,
         preRequests,
         sameRequests,
         field,
+        classTime,
+        examTime,
+        examLocation,
+        teacher,
+        capacity,
+        semester,
       }).save();
       res.status(200).send({ message: 'created successfully', subject });
     } catch (error) {
@@ -120,3 +157,5 @@ router.get(
     }
   }
 );
+
+export default router;

@@ -17,15 +17,50 @@ const subject_1 = require("../../models/subject");
 const jwt_1 = require("../../middlewares/jwt");
 const authorization_1 = require("../../middlewares/authorization");
 const router = express_1.default.Router();
-router.post('/course', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { name, value, preRequests, sameRequests, field } = req.body;
+// router.post(
+//   '/course',
+//   authMiddleware,
+//   (req: Request, res: Response, next: NextFunction) =>
+//     authorizationMiddleware('manager', req, res, next),
+//   async (req: Request, res: Response) => {
+//     const { name, value, preRequests, sameRequests, field } =
+//       req.body as ISubject & {
+//         id: string;
+//       };
+//     try {
+//       const subject = await new Subject({
+//         name,
+//         value,
+//         preRequests,
+//         sameRequests,
+//         field,
+//       }).save();
+//       res.status(200).send({ message: 'created successfully', subject });
+//     } catch (error) {
+//       console.log(error);
+//       res.status(500).send({ message: error });
+//     }
+//   }
+// );
+router.post('/course', 
+// authMiddleware,
+// (req: Request, res: Response, next: NextFunction) =>
+//   authorizationMiddleware('manager', req, res, next),
+(req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { name, value, preRequests, sameRequests, field, classTime, examTime, examLocation, teacher, capacity, semester, } = req.body;
     try {
-        const subject = yield new subject_1.Subject({
+        const subject = yield new subject_1.SemesterSubject({
             name,
             value,
             preRequests,
             sameRequests,
             field,
+            classTime,
+            examTime,
+            examLocation,
+            teacher,
+            capacity,
+            semester,
         }).save();
         res.status(200).send({ message: 'created successfully', subject });
     }
@@ -90,3 +125,4 @@ router.get('/course/:id', jwt_1.authMiddleware, (req, res, next) => (0, authoriz
         res.status(500).send({ message: 'server error' });
     }
 }));
+exports.default = router;

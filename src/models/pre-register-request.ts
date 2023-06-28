@@ -1,9 +1,11 @@
 import mongoose from 'mongoose';
-import Student from './student';
 
 const preRequestSchema = new mongoose.Schema(
   {
-    student: { type: Student },
+    student: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Student',
+    },
     courses: [
       {
         type: mongoose.Schema.Types.ObjectId,

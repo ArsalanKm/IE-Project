@@ -20,6 +20,10 @@ const router = express_1.default.Router();
 router.get('/professors', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('admin', req, res, next), (req, res) => (0, utils_1.getListUtil)('teacher', req, res));
 router.get('/professor/:id', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('admin', req, res, next), (req, res) => (0, utils_1.getByIdUtil)('teacher', req, res));
 router.delete('/professor/:id', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('admin', req, res, next), (req, res) => (0, utils_1.deleteItemUtil)('teacher', req, res));
-router.post('/professor', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('admin', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () { return (0, utils_1.createUtil)('teacher', req, res); }));
+router.post('/professor', 
+// authMiddleware,
+// (req: Request, res: Response, next: NextFunction) =>
+//   authorizationMiddleware('admin', req, res, next),
+(req, res) => __awaiter(void 0, void 0, void 0, function* () { return (0, utils_1.createUtil)('teacher', req, res); }));
 router.put('/professor/:id', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('admin', req, res, next), (req, res) => (0, utils_1.updateUtil)('teacher', req, res));
 exports.default = router;

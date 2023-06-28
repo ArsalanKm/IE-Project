@@ -1,10 +1,11 @@
 import mongoose from 'mongoose';
 
-import Student from './student';
-
 const registerSchema = new mongoose.Schema(
   {
-    student: { type: Student, required: true },
+    student: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Student',
+    },
     courses: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -22,5 +23,5 @@ const registerSchema = new mongoose.Schema(
   }
 );
 
-const RegisterRequest = mongoose.model('RegisterSchema', registerSchema);
+const RegisterRequest = mongoose.model('RegisterRequest', registerSchema);
 export default RegisterRequest;

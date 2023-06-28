@@ -49,16 +49,21 @@ export interface ITerm {
   name: string;
   termUsersId: Array<Number>;
   termCourses: Array<ISemesterSubject>;
-  preRequestTermCourses: Array<ISemesterSubject>;
+  preRegistrationCourses: Array<ISemesterSubject>;
 }
 export interface ISemesterSubject extends ISubject {
-  id: string;
   classTime: string;
   examTime: string;
   examLocation: string;
   teacher: ITeacher;
   capacity: number;
   semester: number;
+}
+export interface IPreRegisterRequests {
+  courses: Array<ISemesterSubject>;
+  student: ISubject;
+  term: ITerm;
+  id: string;
 }
 
 export const PersonSchemaType = {

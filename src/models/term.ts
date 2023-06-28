@@ -3,18 +3,33 @@ import mongoose from 'mongoose';
 const termSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    termUsersId: [Number],
+    termUsersId: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Student',
+      },
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Student',
+      },
+    ],
     termCourses: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'SemesterSubject',
       },
     ],
-    preRequestTermCourses: [
+    preRegistrationCourses: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'SemesterSubject',
       },
+    ],
+    preRegistrationRequests: [
+      { type: mongoose.Schema.Types.ObjectId, ref: 'RegisterRequest' },
+    ],
+    RegistratoinRequests: [
+      { type: mongoose.Schema.Types.ObjectId, ref: 'PreRegisterRequest' },
     ],
   },
   {

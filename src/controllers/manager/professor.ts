@@ -22,3 +22,5 @@ router.get(
     authorizationMiddleware('manager', req, res, next),
   (req: Request, res: Response) => getByIdUtil('teacher', req, res)
 );
+
+export default router;

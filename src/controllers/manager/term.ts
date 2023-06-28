@@ -5,19 +5,21 @@ import { authMiddleware } from '../../middlewares/jwt';
 import { authorizationMiddleware } from '../../middlewares/authorization';
 
 import Term from '../../models/term';
-import { SemesterSubject } from 'models/subject';
+import { SemesterSubject } from '../../models/subject';
 
 const router = express.Router();
 
 router.get(
   '/terms',
-  authMiddleware,
-  (req: Request, res: Response, next: NextFunction) =>
-    authorizationMiddleware('manager', req, res, next),
+  // authMiddleware,
+  // (req: Request, res: Response, next: NextFunction) =>
+  //   authorizationMiddleware('manager', req, res, next),
   async (req: Request, res: Response) => {
     try {
-      const courses = await Term.find({}).populate('termCourses').exec();
-      res.status(200).send({ courses });
+      const terms = await Term.find({})
+        .populate(['termCourses', 'preRegistrationCourses'])
+        .exec();
+      res.status(200).send({ terms });
     } catch (error) {
       console.log(error);
       res.status(500).send({ message: error });
@@ -27,14 +29,16 @@ router.get(
 
 router.get(
   '/term/:id',
-  authMiddleware,
-  (req: Request, res: Response, next: NextFunction) =>
-    authorizationMiddleware('manager', req, res, next),
+  // authMiddleware,
+  // (req: Request, res: Response, next: NextFunction) =>
+  //   authorizationMiddleware('manager', req, res, next),
   async (req: Request, res: Response) => {
     const { id } = req.params;
 
     try {
-      const course = await Term.findById(id).populate('termCourses').exec();
+      const course = await Term.findById(id)
+        .populate(['termCourses', 'preRegistrationCourses'])
+        .exec();
       res.status(200).send({ course });
     } catch (error) {
       res.status(500).send({ message: 'server error' });
@@ -44,9 +48,9 @@ router.get(
 
 router.delete(
   '/term/:id',
-  authMiddleware,
-  (req: Request, res: Response, next: NextFunction) =>
-    authorizationMiddleware('manager', req, res, next),
+  // authMiddleware,
+  // (req: Request, res: Response, next: NextFunction) =>
+  //   authorizationMiddleware('manager', req, res, next),
   async (req: Request, res: Response) => {
     const { id } = req.params;
 
@@ -65,17 +69,19 @@ router.delete(
 
 router.put(
   '/term/:id',
-  authMiddleware,
-  (req: Request, res: Response, next: NextFunction) =>
-    authorizationMiddleware('manager', req, res, next),
+  // authMiddleware,
+  // (req: Request, res: Response, next: NextFunction) =>
+  //   authorizationMiddleware('manager', req, res, next),
   async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { name, termCourses, termUsersId } = req.body as ITerm;
+    const { name, termCourses, termUsersId, preRegistrationCourses } =
+      req.body as ITerm;
     try {
       const subject = await Term.findByIdAndUpdate(id, {
         name,
         termUsersId,
         termCourses,
+        preRegistrationCourses,
       }).exec();
 
       if (!subject) {
@@ -91,16 +97,18 @@ router.put(
 
 router.post(
   '/term',
-  authMiddleware,
-  (req: Request, res: Response, next: NextFunction) =>
-    authorizationMiddleware('manager', req, res, next),
+  // authMiddleware,
+  // (req: Request, res: Response, next: NextFunction) =>
+  //   authorizationMiddleware('manager', req, res, next),
   async (req: Request, res: Response) => {
-    const { name, termCourses, termUsersId } = req.body as ITerm;
+    const { name, termCourses, termUsersId, preRegistrationCourses } =
+      req.body as ITerm;
     try {
       const term = await new Term({
         name,
         termCourses,
         termUsersId,
+        preRegistrationCourses,
       }).save();
       res.status(200).send({ message: 'created successfully', term });
     } catch (error) {
@@ -112,9 +120,9 @@ router.post(
 
 router.post(
   '/term/:id/preregistration/:courseId',
-  authMiddleware,
-  (req: Request, res: Response, next: NextFunction) =>
-    authorizationMiddleware('manager', req, res, next),
+  // authMiddleware,
+  // (req: Request, res: Response, next: NextFunction) =>
+  //   authorizationMiddleware('manager', req, res, next),
   async (req: Request, res: Response) => {
     const termId = req.params.id;
     const courseId = req.params.courseId;
@@ -122,10 +130,13 @@ router.post(
     try {
       let course = await SemesterSubject.findById(courseId).exec();
       const term = await Term.findById(termId).exec();
-      const termPreRequests = term?.preRequestTermCourses;
+      const termPreRequests = term?.preRegistrationCourses;
       if (course) {
         termPreRequests?.push(course.id);
       }
+      await Term.findByIdAndUpdate(termId, {
+        preRegistrationCourses: termPreRequests,
+      });
       res.status(200).send({ message: 'created successfully', term });
     } catch (error) {
       console.log(error);
@@ -136,19 +147,81 @@ router.post(
 
 router.get(
   '/term/:id/preregistration_courses',
-  authMiddleware,
-  (req: Request, res: Response, next: NextFunction) =>
-    authorizationMiddleware('manager', req, res, next),
+  // authMiddleware,
+  // (req: Request, res: Response, next: NextFunction) =>
+  //   authorizationMiddleware('manager', req, res, next),
   async (req: Request, res: Response) => {
     const termId = req.params.id;
 
     try {
       const term = await Term.findById(termId)
-        .populate('preRequestTermCourses')
+        .populate('preRegistrationCourses')
         .exec();
-      const termPreRequests =
-        term?.preRequestTermCourses as unknown as Array<ISemesterSubject>;
+      console.log(term);
 
+      const termPreRequests =
+        term?.preRegistrationCourses as unknown as Array<ISemesterSubject>;
+
+      res.status(200).send({ courses: termPreRequests });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({ message: error });
+    }
+  }
+);
+
+router.delete(
+  '/term/:id/preregistration/:courseId',
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('manager', req, res, next),
+  async (req: Request, res: Response) => {
+    const termId = req.params.id;
+    const courseId = req.params.courseId;
+
+    try {
+      let course = await SemesterSubject.findById(courseId).exec();
+      const term = await Term.findById(termId).exec();
+      const termPreRegistrationCourses = term?.preRegistrationCourses;
+      if (course) {
+        const index = termPreRegistrationCourses?.findIndex(course.id);
+        if (index && index > -1) {
+          termPreRegistrationCourses?.splice(index, 1);
+        }
+        await Term.findByIdAndUpdate(termId, {
+          termPreRegistrationCourses: termPreRegistrationCourses,
+        }).exec();
+      }
+      res.status(200).send({
+        message: 'deleted successfully',
+        termPreRegistrationCourses: termPreRegistrationCourses,
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({ message: error });
+    }
+  }
+);
+
+router.post(
+  '/term/:id/course/register/:courseId',
+  // authMiddleware,
+  // (req: Request, res: Response, next: NextFunction) =>
+  //   authorizationMiddleware('manager', req, res, next),
+  async (req: Request, res: Response) => {
+    const termId = req.params.id;
+    const courseId = req.params.courseId;
+
+    try {
+      let course = await SemesterSubject.findById(courseId).exec();
+      const term = await Term.findById(termId).exec();
+      const termCourses = term?.termCourses;
+      if (course) {
+        termCourses?.push(course.id);
+      }
+      await Term.findByIdAndUpdate(termId, {
+        termCourses,
+      });
       res.status(200).send({ message: 'created successfully', term });
     } catch (error) {
       console.log(error);
@@ -157,4 +230,57 @@ router.get(
   }
 );
 
+router.get(
+  '/term/:id/registration_courses',
+  // authMiddleware,
+  // (req: Request, res: Response, next: NextFunction) =>
+  //   authorizationMiddleware('manager', req, res, next),
+  async (req: Request, res: Response) => {
+    const termId = req.params.id;
+
+    try {
+      const term = await Term.findById(termId).populate('termCourses').exec();
+      const termCourses =
+        term?.termCourses as unknown as Array<ISemesterSubject>;
+
+      res.status(200).send({ courses: termCourses });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({ message: error });
+    }
+  }
+);
+
+router.delete(
+  '/term/:id/course/register/:courseId',
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('manager', req, res, next),
+  async (req: Request, res: Response) => {
+    const termId = req.params.id;
+    const courseId = req.params.courseId;
+
+    try {
+      let course = await SemesterSubject.findById(courseId).exec();
+      const term = await Term.findById(termId).exec();
+      const termCourses = term?.termCourses;
+      if (course) {
+        const index = termCourses?.findIndex(course.id);
+        if (index && index > -1) {
+          termCourses?.splice(index, 1);
+        }
+        await Term.findByIdAndUpdate(termId, {
+          termPreRegistrationCourses: termCourses,
+        }).exec();
+      }
+      res.status(200).send({
+        message: 'deleted successfully',
+        termPreRegistrationCourses: termCourses,
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({ message: error });
+    }
+  }
+);
 export default router;
