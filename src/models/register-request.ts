@@ -12,6 +12,11 @@ const registerSchema = new mongoose.Schema(
         ref: 'SemesterSubject',
       },
     ],
+    confirmed: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   {
     toJSON: {

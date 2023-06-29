@@ -16,6 +16,10 @@ const studentSchema = passwordMiddleware(
       average: { type: Number, required: true },
       faculty: { type: String, required: true },
       field: { type: String, required: true },
+      leadTeacher: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Teacher',
+      },
     },
     {
       toJSON: {

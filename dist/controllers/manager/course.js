@@ -105,7 +105,11 @@ router.delete('/course/:id', jwt_1.authMiddleware, (req, res, next) => (0, autho
         res.status(500).send({ message: 'server error' });
     }
 }));
-router.get('/courses', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/courses', 
+// authMiddleware,
+// (req: Request, res: Response, next: NextFunction) =>
+//   authorizationMiddleware('manager', req, res, next),
+(req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const courses = yield subject_1.Subject.find({}).populate('preRequests').exec();
         res.status(200).send({ courses });

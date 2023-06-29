@@ -127,9 +127,9 @@ router.delete(
 
 router.get(
   '/courses',
-  authMiddleware,
-  (req: Request, res: Response, next: NextFunction) =>
-    authorizationMiddleware('manager', req, res, next),
+  // authMiddleware,
+  // (req: Request, res: Response, next: NextFunction) =>
+  //   authorizationMiddleware('manager', req, res, next),
   async (req: Request, res: Response) => {
     try {
       const courses = await Subject.find({}).populate('preRequests').exec();

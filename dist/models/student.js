@@ -9,7 +9,10 @@ const studentSchema = (0, _1.passwordMiddleware)(new mongoose_1.default.Schema(O
         type: String,
         required: true,
         enum: ['Bachelor', 'Master', 'PhD'],
-    }, enteranceYear: { type: String, required: true }, semester: { type: String, required: true }, average: { type: Number, required: true }, faculty: { type: String, required: true }, field: { type: String, required: true } }), {
+    }, enteranceYear: { type: String, required: true }, semester: { type: String, required: true }, average: { type: Number, required: true }, faculty: { type: String, required: true }, field: { type: String, required: true }, leadTeacher: {
+        type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: 'Teacher',
+    } }), {
     toJSON: {
         transform(doc, ret) {
             ret.id = ret._id;

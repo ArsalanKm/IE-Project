@@ -17,6 +17,7 @@ const jwt_1 = require("../../middlewares/jwt");
 const authorization_1 = require("../../middlewares/authorization");
 const term_1 = __importDefault(require("../../models/term"));
 const subject_1 = require("../../models/subject");
+const register_request_1 = __importDefault(require("../../models/register-request"));
 const router = express_1.default.Router();
 router.get('/terms', 
 // authMiddleware,
@@ -242,6 +243,28 @@ router.delete('/term/:id/course/register/:courseId', jwt_1.authMiddleware, (req,
             message: 'deleted successfully',
             termPreRegistrationCourses: termCourses,
         });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send({ message: error });
+    }
+}));
+router.put('/registration/:id', 
+// authMiddleware,
+// (req: Request, res: Response, next: NextFunction) =>
+//   authorizationMiddleware('manager', req, res, next),
+(req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const update = yield register_request_1.default.findByIdAndUpdate(id, {
+            confirm: true,
+        }).exec();
+        if (update) {
+            res.status(200).send({ message: 'updated successfully' });
+        }
+        else {
+            res.status(400).send({ message: 'registration not found' });
+        }
     }
     catch (error) {
         console.log(error);

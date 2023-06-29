@@ -20,6 +20,7 @@ const subject_1 = require("../../models/subject");
 const student_1 = __importDefault(require("../../models/student"));
 const term_1 = __importDefault(require("../../models/term"));
 const pre_register_request_1 = __importDefault(require("../../models/pre-register-request"));
+const register_request_1 = __importDefault(require("../../models/register-request"));
 const router = express_1.default.Router();
 router.post('/login', (req, res) => (0, utils_1.loginHandler)('student', req, res));
 router.get('/courses', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('student', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -105,16 +106,119 @@ router.get('/term/:id/preregistration_courses',
         res.status(500).send({ message: error });
     }
 }));
-router.get('/term/:id/registration_courses', 
+// TODO check this
+router.post('/term/:id/preregister/:courseId', 
+// authMiddleware,
+// (req: Request, res: Response, next: NextFunction) =>
+//   authorizationMiddleware('manager', req, res, next),
+(req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { id, courseId } = req.params;
+        const term = yield term_1.default.findById(id)
+            .populate('preRegistrationCourses')
+            .exec();
+        if (term) {
+            const courses = term.preRegistrationCourses;
+            console.log(courses);
+            console.log(courseId);
+            if (!courses.find((el) => el.id === courseId)) {
+                res.status(400).send({ message: 'course not found in term' });
+                return;
+            }
+            const existedPreRequest = yield pre_register_request_1.default.find({
+                student: req.body.userId,
+            }).exec();
+            if (existedPreRequest && existedPreRequest.length > 0) {
+                console.log(existedPreRequest);
+                const request = existedPreRequest;
+                yield pre_register_request_1.default.findByIdAndUpdate(request.id, {
+                    student: req.body.userId,
+                    courses: (_a = existedPreRequest.courses) === null || _a === void 0 ? void 0 : _a.map((el) => el.id).push(courseId),
+                }).exec();
+                res.status(200).send({
+                    message: 'course added to existed pre-registration request',
+                });
+                console.log('here');
+            }
+            else {
+                yield new pre_register_request_1.default({
+                    term: id,
+                    student: req.body.userId,
+                    courses: [courseId],
+                }).save();
+                res
+                    .status(200)
+                    .send({ message: 'new pre-registration created with new course' });
+            }
+        }
+        else {
+            res.status(400).send({ message: 'term not found' });
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send({ message: error });
+    }
+}));
+// TODO check this
+router.delete('/term/:id/preregister/:courseId', 
+// authMiddleware,
+// (req: Request, res: Response, next: NextFunction) =>
+//   authorizationMiddleware('manager', req, res, next),
+(req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b;
+    try {
+        const { id, courseId } = req.params;
+        const term = yield term_1.default.findById(id)
+            .populate('preRegistrationCourses')
+            .exec();
+        if (term) {
+            const courses = term.preRegistrationCourses;
+            if (!courses.find((el) => el.id === courseId)) {
+                res.status(400).send({ message: 'course not found in term' });
+            }
+            // console.log(req.body.userId);
+            const existedPreRequest = yield pre_register_request_1.default.findOne({
+                student: req.body.userId,
+            })
+                .populate('courses')
+                .exec();
+            if (existedPreRequest) {
+                const request = existedPreRequest;
+                yield pre_register_request_1.default.findByIdAndUpdate(request.id, {
+                    student: req.body.userId,
+                    courses: (_b = request.courses) === null || _b === void 0 ? void 0 : _b.filter((el) => el.id !== courseId),
+                }).exec();
+                res.status(200).send({
+                    message: 'course deleted from pre-registration request',
+                });
+            }
+            else {
+                res.status(400).send({ message: 'pre-register not found' });
+            }
+        }
+        else {
+            res.status(400).send({ message: 'term not found' });
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send({ message: error });
+    }
+}));
+router.get('/term/:id/preregistrations', 
 // authMiddleware,
 // (req: Request, res: Response, next: NextFunction) =>
 //   authorizationMiddleware('manager', req, res, next),
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const term = yield term_1.default.findById(id).populate('termCourses').exec();
-        if (term) {
-            res.status(200).send({ termCourses: term === null || term === void 0 ? void 0 : term.termCourses });
+        const requests = yield pre_register_request_1.default.find({ term: id })
+            .populate(['courses'])
+            .exec();
+        if (requests) {
+            res.status(200).send({ requests });
         }
         else {
             res.status(400).send({ message: 'term not found' });
@@ -146,37 +250,111 @@ router.get('/term/:id/registration_courses',
     }
 }));
 // TODO check this
-router.post('/term/:id/preregister/:courseId', 
+router.post('/term/:id/register/:courseId', 
+// authMiddleware,
+// (req: Request, res: Response, next: NextFunction) =>
+//   authorizationMiddleware('manager', req, res, next),
+(req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c;
+    try {
+        const { id, courseId } = req.params;
+        const term = yield term_1.default.findById(id).populate('termCourses').exec();
+        if (term) {
+            const courses = term.termCourses;
+            if (!courses.find((el) => el.id === courseId)) {
+                res.status(400).send({ message: 'course not found in term' });
+                return;
+            }
+            const existedPreRequest = yield register_request_1.default.find({
+                student: req.body.userId,
+            }).exec();
+            if (existedPreRequest && existedPreRequest.length > 0) {
+                console.log(existedPreRequest);
+                const request = existedPreRequest;
+                yield register_request_1.default.findByIdAndUpdate(request.id, {
+                    student: req.body.userId,
+                    courses: (_c = existedPreRequest.courses) === null || _c === void 0 ? void 0 : _c.map((el) => el.id).push(courseId),
+                }).exec();
+                res.status(200).send({
+                    message: 'course added to existed registration request',
+                });
+                console.log('here');
+            }
+            else {
+                yield new register_request_1.default({
+                    term: id,
+                    student: req.body.userId,
+                    courses: [courseId],
+                }).save();
+                res
+                    .status(200)
+                    .send({ message: 'new registration created with new course' });
+            }
+        }
+        else {
+            res.status(400).send({ message: 'term not found' });
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send({ message: error });
+    }
+}));
+router.get('/term/:id/registrations', 
 // authMiddleware,
 // (req: Request, res: Response, next: NextFunction) =>
 //   authorizationMiddleware('manager', req, res, next),
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const { id } = req.params;
+        const requests = yield register_request_1.default.find({ term: id })
+            .populate(['courses'])
+            .exec();
+        if (requests) {
+            res.status(200).send({ requests });
+        }
+        else {
+            res.status(400).send({ message: 'term not found' });
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send({ message: error });
+    }
+}));
+// TODO check this
+router.delete('/term/:id/register/:courseId', 
+// authMiddleware,
+// (req: Request, res: Response, next: NextFunction) =>
+//   authorizationMiddleware('manager', req, res, next),
+(req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _d;
+    try {
         const { id, courseId } = req.params;
         const term = yield term_1.default.findById(id).populate('termCourses').exec();
         if (term) {
-            const courses = term.preRegistrationCourses;
+            const courses = term.termCourses;
             if (!courses.find((el) => el.id === courseId)) {
                 res.status(400).send({ message: 'course not found in term' });
             }
-            const existedPreRequest = yield pre_register_request_1.default.find({
+            // console.log(req.body.userId);
+            const existedPreRequest = yield register_request_1.default.findOne({
                 student: req.body.userId,
-            }).exec();
+            })
+                .populate('courses')
+                .exec();
             if (existedPreRequest) {
                 const request = existedPreRequest;
-                yield pre_register_request_1.default.findByIdAndUpdate(request.id, {
+                yield register_request_1.default.findByIdAndUpdate(request.id, {
                     student: req.body.userId,
-                    courses: existedPreRequest.courses
-                        .map((el) => el.id)
-                        .push(courseId),
+                    courses: (_d = request.courses) === null || _d === void 0 ? void 0 : _d.filter((el) => el.id !== courseId),
                 }).exec();
+                res.status(200).send({
+                    message: 'course deleted registration request',
+                });
             }
             else {
-                yield new pre_register_request_1.default({
-                    term: id,
-                    student: req.body.userId,
-                    courses: [courseId],
-                }).save();
+                res.status(400).send({ message: 'register not found' });
             }
         }
         else {

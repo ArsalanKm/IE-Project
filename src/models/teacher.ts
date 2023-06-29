@@ -9,6 +9,12 @@ const teacherSchema = passwordMiddleware(
       faculty: { type: String, required: true },
       field: { type: String, required: true },
       rank: { type: Number, required: true },
+      students: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Student',
+        },
+      ],
     },
     {
       toJSON: {

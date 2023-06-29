@@ -6,6 +6,7 @@ import { authorizationMiddleware } from '../../middlewares/authorization';
 
 import Term from '../../models/term';
 import { SemesterSubject } from '../../models/subject';
+import RegisterRequest from '../../models/register-request';
 
 const router = express.Router();
 
@@ -277,6 +278,29 @@ router.delete(
         message: 'deleted successfully',
         termPreRegistrationCourses: termCourses,
       });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({ message: error });
+    }
+  }
+);
+
+router.put(
+  '/registration/:id',
+  // authMiddleware,
+  // (req: Request, res: Response, next: NextFunction) =>
+  //   authorizationMiddleware('manager', req, res, next),
+  async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const update = await RegisterRequest.findByIdAndUpdate(id, {
+        confirm: true,
+      }).exec();
+      if (update) {
+        res.status(200).send({ message: 'updated successfully' });
+      } else {
+        res.status(400).send({ message: 'registration not found' });
+      }
     } catch (error) {
       console.log(error);
       res.status(500).send({ message: error });
