@@ -3,7 +3,9 @@ import mongoose from 'mongoose';
 const facultySchema = new mongoose.Schema(
   {
     name: { type: String },
+    field: { type: String },
   },
+
   {
     toJSON: {
       transform(doc, ret) {

@@ -31,9 +31,15 @@ const semesterSubjectSchema = new mongoose.Schema(
     classTime: { type: String, required: true },
     examTime: { type: String, required: true },
     examLocation: { type: String, required: true },
-    teacher: { type: Schema.Types.ObjectId, ref: 'Teacher' },
-    capacity: { type: String, required: true },
-    semester: { type: String, required: true },
+    teacher: { type: Schema.Types.ObjectId, ref: 'Teacher', default: null },
+    capacity: { type: Number, default: 0 },
+    semester: { type: String, required: false },
+    preRegisterStudents: [
+      { type: Schema.Types.ObjectId, ref: 'Student', default: null },
+    ],
+    registerStudents: [
+      { type: Schema.Types.ObjectId, ref: 'Student', default: null },
+    ],
   },
   {
     toJSON: {

@@ -1,9 +1,9 @@
 import express, { Request, Response, NextFunction } from 'express';
-
+import { ObjectId } from 'mongodb';
 import { authMiddleware } from '../../middlewares/jwt';
 import { authorizationMiddleware } from '../../middlewares/authorization';
 import { loginHandler, updateUtil } from '../utils';
-import { Subject } from '../../models/subject';
+import { SemesterSubject, Subject } from '../../models/subject';
 import Student from '../../models/student';
 import Term from '../../models/term';
 import PreRegisterRequests from '../../models/pre-register-request';
@@ -95,7 +95,7 @@ router.get(
       const terms = await Term.find({})
         .populate(['termCourses', 'preRegistrationCourses'])
         .exec();
-      res.status(200).send({ terms });
+      res.status(200).send({ data: terms });
     } catch (error) {
       console.log(error);
       res.status(500).send({ message: error });
@@ -103,6 +103,26 @@ router.get(
   }
 );
 
+router.get(
+  '/term/:id',
+  // authMiddleware,
+  // (req: Request, res: Response, next: NextFunction) =>
+  //   authorizationMiddleware('manager', req, res, next),
+  async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const term = await Term.findById(id).exec();
+      if (term) {
+        res.status(200).send({ data: term });
+      } else {
+        res.status(400).send({ message: 'term not found' });
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({ message: error });
+    }
+  }
+);
 router.get(
   '/term/:id/preregistration_courses',
   // authMiddleware,
@@ -115,11 +135,9 @@ router.get(
         .populate('preRegistrationCourses')
         .exec();
       if (term) {
-        res
-          .status(200)
-          .send({ preRegistrationCourses: term?.preRegistrationCourses });
+        res.status(200).send({ data: term?.preRegistrationCourses });
       } else {
-        res.status(400).send({ message: 'term not found' });
+        res.status(400).send({ data: 'term not found' });
       }
     } catch (error) {
       console.log(error);
@@ -131,12 +149,13 @@ router.get(
 // TODO check this
 router.post(
   '/term/:id/preregister/:courseId',
-  // authMiddleware,
-  // (req: Request, res: Response, next: NextFunction) =>
-  //   authorizationMiddleware('manager', req, res, next),
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('student', req, res, next),
   async (req: Request, res: Response) => {
     try {
       const { id, courseId } = req.params;
+      console.log(req.body.userId);
 
       const term = await Term.findById(id)
         .populate('preRegistrationCourses')
@@ -144,35 +163,49 @@ router.post(
       if (term) {
         const courses =
           term.preRegistrationCourses as unknown as Array<ISemesterSubject>;
-        console.log(courses);
-        console.log(courseId);
 
         if (!courses.find((el) => el.id === courseId)) {
           res.status(400).send({ message: 'course not found in term' });
           return;
         }
-
-        const existedPreRequest = await PreRegisterRequests.find({
+        const existedPreRequest = await PreRegisterRequests.findOne({
           student: req.body.userId,
         }).exec();
 
-        if (existedPreRequest && existedPreRequest.length > 0) {
-          console.log(existedPreRequest);
+        if (existedPreRequest) {
+          const existedCourse = await SemesterSubject.findByIdAndUpdate(
+            courseId
+          ).exec();
+
+          const existedPreRegisterStudents = existedCourse?.preRegisterStudents;
+          if (
+            existedPreRegisterStudents?.length === 0 ||
+            existedPreRegisterStudents?.find(
+              (el) => el.toString() !== req.body.userId
+            )
+          ) {
+            existedPreRegisterStudents?.push(req.body.userId);
+          }
+
+          await SemesterSubject.findByIdAndUpdate(courseId, {
+            preRegisterStudents: existedPreRegisterStudents,
+          }).exec();
+
           const request = existedPreRequest as unknown as IPreRegisterRequests;
+          existedPreRequest?.courses?.push(courseId);
+
           await PreRegisterRequests.findByIdAndUpdate(request.id, {
-            student: req.body.userId,
-            courses: (
-              existedPreRequest as unknown as IPreRegisterRequests
-            ).courses
-              ?.map((el) => el.id)
-              .push(courseId),
+            courses: existedPreRequest.courses,
           }).exec();
 
           res.status(200).send({
             message: 'course added to existed pre-registration request',
           });
-          console.log('here');
         } else {
+          await SemesterSubject.findByIdAndUpdate(courseId, {
+            $push: { preRegisterStudents: req.body.userId },
+            // registerStudents: existedRegisterStudents,
+          }).exec();
           await new PreRegisterRequests({
             term: id,
             student: req.body.userId,
@@ -195,9 +228,9 @@ router.post(
 // TODO check this
 router.delete(
   '/term/:id/preregister/:courseId',
-  // authMiddleware,
-  // (req: Request, res: Response, next: NextFunction) =>
-  //   authorizationMiddleware('manager', req, res, next),
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('student', req, res, next),
   async (req: Request, res: Response) => {
     try {
       const { id, courseId } = req.params;
@@ -210,10 +243,12 @@ router.delete(
           term.preRegistrationCourses as unknown as Array<ISemesterSubject>;
         if (!courses.find((el) => el.id === courseId)) {
           res.status(400).send({ message: 'course not found in term' });
+          return;
         }
         // console.log(req.body.userId);
 
         const existedPreRequest = await PreRegisterRequests.findOne({
+          term: id,
           student: req.body.userId,
         })
           .populate('courses')
@@ -221,9 +256,12 @@ router.delete(
         if (existedPreRequest) {
           const request = existedPreRequest as unknown as IPreRegisterRequests;
           await PreRegisterRequests.findByIdAndUpdate(request.id, {
-            student: req.body.userId,
             courses: request.courses?.filter((el) => el.id !== courseId),
           }).exec();
+          await SemesterSubject.findByIdAndUpdate(courseId, {
+            $pull: { preRegisterStudents: req.body.userId },
+          }).exec();
+
           res.status(200).send({
             message: 'course deleted from pre-registration request',
           });
@@ -242,17 +280,20 @@ router.delete(
 
 router.get(
   '/term/:id/preregistrations',
-  // authMiddleware,
-  // (req: Request, res: Response, next: NextFunction) =>
-  //   authorizationMiddleware('manager', req, res, next),
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('student', req, res, next),
   async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const requests = await PreRegisterRequests.find({ term: id })
+      const requests = await PreRegisterRequests.find({
+        // term: id,
+        student: req.body.userId,
+      })
         .populate(['courses'])
         .exec();
       if (requests) {
-        res.status(200).send({ requests });
+        res.status(200).send({ data: requests });
       } else {
         res.status(400).send({ message: 'term not found' });
       }
@@ -273,7 +314,7 @@ router.get(
       const { id } = req.params;
       const term = await Term.findById(id).populate('termCourses').exec();
       if (term) {
-        res.status(200).send({ termCourses: term?.termCourses });
+        res.status(200).send({ data: term?.termCourses });
       } else {
         res.status(400).send({ message: 'term not found' });
       }
@@ -287,13 +328,12 @@ router.get(
 // TODO check this
 router.post(
   '/term/:id/register/:courseId',
-  // authMiddleware,
-  // (req: Request, res: Response, next: NextFunction) =>
-  //   authorizationMiddleware('manager', req, res, next),
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('student', req, res, next),
   async (req: Request, res: Response) => {
     try {
       const { id, courseId } = req.params;
-
       const term = await Term.findById(id).populate('termCourses').exec();
       if (term) {
         const courses = term.termCourses as unknown as Array<ISemesterSubject>;
@@ -303,20 +343,35 @@ router.post(
           return;
         }
 
-        const existedPreRequest = await RegisterRequest.find({
+        const existedPreRequest = await RegisterRequest.findOne({
+          term: id,
           student: req.body.userId,
         }).exec();
 
-        if (existedPreRequest && existedPreRequest.length > 0) {
-          console.log(existedPreRequest);
+        if (existedPreRequest) {
+          const existedCourse = await SemesterSubject.findByIdAndUpdate(
+            courseId
+          ).exec();
+
+          const existedRegisterStudents = existedCourse?.registerStudents;
+          if (
+            existedRegisterStudents?.length === 0 ||
+            existedRegisterStudents?.find(
+              (el) => el.toString() !== req.body.userId
+            )
+          ) {
+            existedRegisterStudents?.push(req.body.userId);
+          }
+          await SemesterSubject.findByIdAndUpdate(courseId, {
+            registerStudents: existedRegisterStudents,
+          }).exec();
+
           const request = existedPreRequest as unknown as IPreRegisterRequests;
+          existedPreRequest?.courses?.push(courseId);
+          console.log(existedPreRequest);
+
           await RegisterRequest.findByIdAndUpdate(request.id, {
-            student: req.body.userId,
-            courses: (
-              existedPreRequest as unknown as IPreRegisterRequests
-            ).courses
-              ?.map((el) => el.id)
-              .push(courseId),
+            courses: existedPreRequest.courses,
           }).exec();
 
           res.status(200).send({
@@ -324,6 +379,10 @@ router.post(
           });
           console.log('here');
         } else {
+          await SemesterSubject.findByIdAndUpdate(courseId, {
+            $push: { registerStudents: req.body.userId },
+            // registerStudents: existedRegisterStudents,
+          }).exec();
           await new RegisterRequest({
             term: id,
             student: req.body.userId,
@@ -342,20 +401,22 @@ router.post(
     }
   }
 );
-
 router.get(
   '/term/:id/registrations',
-  // authMiddleware,
-  // (req: Request, res: Response, next: NextFunction) =>
-  //   authorizationMiddleware('manager', req, res, next),
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('student', req, res, next),
   async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const requests = await RegisterRequest.find({ term: id })
+      const requests = await RegisterRequest.find({
+        term: id,
+        student: req.body.userId,
+      })
         .populate(['courses'])
         .exec();
       if (requests) {
-        res.status(200).send({ requests });
+        res.status(200).send({ data: requests });
       } else {
         res.status(400).send({ message: 'term not found' });
       }
@@ -369,9 +430,9 @@ router.get(
 // TODO check this
 router.delete(
   '/term/:id/register/:courseId',
-  // authMiddleware,
-  // (req: Request, res: Response, next: NextFunction) =>
-  //   authorizationMiddleware('manager', req, res, next),
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('student', req, res, next),
   async (req: Request, res: Response) => {
     try {
       const { id, courseId } = req.params;
@@ -392,14 +453,17 @@ router.delete(
         if (existedPreRequest) {
           const request = existedPreRequest as unknown as IPreRegisterRequests;
           await RegisterRequest.findByIdAndUpdate(request.id, {
-            student: req.body.userId,
             courses: request.courses?.filter((el) => el.id !== courseId),
+          }).exec();
+          await SemesterSubject.findByIdAndUpdate(courseId, {
+            $pull: { registerStudents: req.body.userId },
           }).exec();
           res.status(200).send({
             message: 'course deleted registration request',
           });
         } else {
           res.status(400).send({ message: 'register not found' });
+          return;
         }
       } else {
         res.status(400).send({ message: 'term not found' });

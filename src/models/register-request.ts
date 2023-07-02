@@ -17,6 +17,10 @@ const registerSchema = new mongoose.Schema(
       required: false,
       default: false,
     },
+    term: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Term',
+    },
   },
   {
     toJSON: {

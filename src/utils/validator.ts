@@ -10,19 +10,19 @@ export const personDataValidator = (
 ): IValidation => {
   const { name, familyName, phoneNumber, password, universityId, email } = data;
 
-  if (
-    !name ||
-    !familyName ||
-    !password ||
-    !universityId ||
-    !phoneNumber ||
-    !email
-  ) {
-    return {
-      valid: false,
-      message: 'Fields could not be empty',
-    };
-  }
+  // if (
+  //   !name ||
+  //   !familyName ||
+  //   !password ||
+  //   !universityId ||
+  //   !phoneNumber ||
+  //   !email
+  // ) {
+  //   return {
+  //     valid: false,
+  //     message: 'Fields could not be empty',
+  //   };
+  // }
 
   return {
     valid: true,
@@ -33,6 +33,8 @@ export const personDataValidator = (
 export const studentDataValidator = (
   data: IStudent & { userId: string }
 ): IValidation => {
+  console.log(data);
+
   const { valid, message } = personDataValidator(
     data as IPerson & { userId: string }
   );
@@ -44,27 +46,38 @@ export const studentDataValidator = (
   }
   const { educationDegree, enteranceYear, semester, average, faculty, field } =
     data;
-  if (
-    !educationDegree ||
-    !enteranceYear ||
-    !semester ||
-    !average ||
-    !faculty ||
-    !field
-  ) {
-    return {
-      valid: false,
-      message: 'Fields should not be empty',
-    };
-  }
-  if (!['Bachelor', 'Master', 'PhD'].includes(educationDegree)) {
+  // if (
+  //   !educationDegree ||
+  //   !enteranceYear ||
+  //   !semester ||
+  //   !average ||
+  //   !faculty ||
+  //   !field
+  // ) {
+  //   console.log({
+  //     educationDegree,
+  //     enteranceYear,
+  //     semester,
+  //     average,
+  //     faculty,
+  //     field,
+  //   });
+  //   return {
+  //     valid: false,
+  //     message: 'Fields should not be empty',
+  //   };
+  // }
+  console.log(educationDegree);
+
+  if (!['کارشناسی', 'ارشد', 'دکتری'].includes(educationDegree)) {
     return {
       valid: false,
       message: 'education degree should be one of Bachelor, Master, PhD',
     };
   }
+  console.log(average);
 
-  if (isNaN(average)) {
+  if (isNaN(Number(average))) {
     return {
       valid: false,
       message: 'average field should be an integer',

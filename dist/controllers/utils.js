@@ -162,17 +162,17 @@ const createUtil = (userType, req, res) => __awaiter(void 0, void 0, void 0, fun
         }
     }
     const existUser = yield (model === null || model === void 0 ? void 0 : model.findOne({
-        _id: data === null || data === void 0 ? void 0 : data.id,
+        universityId: data === null || data === void 0 ? void 0 : data.universityId,
     }).exec());
     if (existUser) {
-        res
-            .status(400)
-            .send({ message: 'Professor exits with same university ID' });
+        res.status(400).send({ message: 'user exits with same university ID' });
         return;
     }
     try {
         const result = model && (yield new model(data).save());
-        res.status(200).send({ message: ' created successfully', data: result });
+        res
+            .status(200)
+            .send({ message: ' created successfully', data: result, success: true });
     }
     catch (error) {
         res.status(500).send({ message: error });

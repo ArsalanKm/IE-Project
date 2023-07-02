@@ -7,7 +7,8 @@ export const authMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  
+  console.log(req.headers);
+
   const auth = req.headers.authorization;
   if (auth && auth.startsWith('Bearer')) {
     const token = auth.slice(7);

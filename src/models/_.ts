@@ -42,6 +42,7 @@ export interface ISubject {
   preRequests: string;
   sameRequests: string;
   field: string;
+  teacher: string;
 }
 
 export interface ITerm {
@@ -51,7 +52,13 @@ export interface ITerm {
   termCourses: Array<ISemesterSubject>;
   preRegistrationCourses: Array<ISemesterSubject>;
 }
-export interface ISemesterSubject extends ISubject {
+export interface ISemesterSubject {
+  id: string;
+  name: string;
+  value: number;
+  preRequests: string;
+  sameRequests: string;
+  field: string;
   classTime: string;
   examTime: string;
   examLocation: string;

@@ -18,6 +18,7 @@ const authorization_1 = require("../../middlewares/authorization");
 const term_1 = __importDefault(require("../../models/term"));
 const subject_1 = require("../../models/subject");
 const register_request_1 = __importDefault(require("../../models/register-request"));
+const pre_register_request_1 = __importDefault(require("../../models/pre-register-request"));
 const router = express_1.default.Router();
 router.get('/terms', 
 // authMiddleware,
@@ -28,7 +29,7 @@ router.get('/terms',
         const terms = yield term_1.default.find({})
             .populate(['termCourses', 'preRegistrationCourses'])
             .exec();
-        res.status(200).send({ terms });
+        res.status(200).send({ data: terms });
     }
     catch (error) {
         console.log(error);
@@ -45,7 +46,7 @@ router.get('/term/:id',
         const course = yield term_1.default.findById(id)
             .populate(['termCourses', 'preRegistrationCourses'])
             .exec();
-        res.status(200).send({ course });
+        res.status(200).send({ data: course });
     }
     catch (error) {
         res.status(500).send({ message: 'server error' });
@@ -146,11 +147,17 @@ router.get('/term/:id/preregistration_courses',
     const termId = req.params.id;
     try {
         const term = yield term_1.default.findById(termId)
-            .populate('preRegistrationCourses')
+            .populate({
+            path: 'preRegistrationCourses',
+            populate: {
+                path: 'teacher',
+                model: 'Teacher',
+            },
+        })
             .exec();
         console.log(term);
         const termPreRequests = term === null || term === void 0 ? void 0 : term.preRegistrationCourses;
-        res.status(200).send({ courses: termPreRequests });
+        res.status(200).send({ data: termPreRequests });
     }
     catch (error) {
         console.log(error);
@@ -165,13 +172,19 @@ router.delete('/term/:id/preregistration/:courseId', jwt_1.authMiddleware, (req,
         const term = yield term_1.default.findById(termId).exec();
         const termPreRegistrationCourses = term === null || term === void 0 ? void 0 : term.preRegistrationCourses;
         if (course) {
-            const index = termPreRegistrationCourses === null || termPreRegistrationCourses === void 0 ? void 0 : termPreRegistrationCourses.findIndex(course.id);
-            if (index && index > -1) {
-                termPreRegistrationCourses === null || termPreRegistrationCourses === void 0 ? void 0 : termPreRegistrationCourses.splice(index, 1);
+            let arrIndex;
+            termPreRegistrationCourses === null || termPreRegistrationCourses === void 0 ? void 0 : termPreRegistrationCourses.forEach((el, index) => {
+                if (el._id.toString() === (course === null || course === void 0 ? void 0 : course._id.toString())) {
+                    arrIndex = index;
+                }
+            });
+            console.log(arrIndex);
+            if (arrIndex && arrIndex > -1) {
+                termPreRegistrationCourses === null || termPreRegistrationCourses === void 0 ? void 0 : termPreRegistrationCourses.splice(arrIndex, 1);
+                yield term_1.default.findByIdAndUpdate(termId, {
+                    preRegistrationCourses: termPreRegistrationCourses,
+                }).exec();
             }
-            yield term_1.default.findByIdAndUpdate(termId, {
-                termPreRegistrationCourses: termPreRegistrationCourses,
-            }).exec();
         }
         res.status(200).send({
             message: 'deleted successfully',
@@ -183,7 +196,7 @@ router.delete('/term/:id/preregistration/:courseId', jwt_1.authMiddleware, (req,
         res.status(500).send({ message: error });
     }
 }));
-router.post('/term/:id/course/register/:courseId', 
+router.post('/term/:id/register/:courseId', 
 // authMiddleware,
 // (req: Request, res: Response, next: NextFunction) =>
 //   authorizationMiddleware('manager', req, res, next),
@@ -200,7 +213,7 @@ router.post('/term/:id/course/register/:courseId',
         yield term_1.default.findByIdAndUpdate(termId, {
             termCourses,
         });
-        res.status(200).send({ message: 'created successfully', term });
+        res.status(200).send({ data: 'created successfully', term });
     }
     catch (error) {
         console.log(error);
@@ -214,16 +227,24 @@ router.get('/term/:id/registration_courses',
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const termId = req.params.id;
     try {
-        const term = yield term_1.default.findById(termId).populate('termCourses').exec();
+        const term = yield term_1.default.findById(termId)
+            .populate({
+            path: 'termCourses',
+            populate: {
+                path: 'teacher',
+                model: 'Teacher',
+            },
+        })
+            .exec();
         const termCourses = term === null || term === void 0 ? void 0 : term.termCourses;
-        res.status(200).send({ courses: termCourses });
+        res.status(200).send({ data: termCourses });
     }
     catch (error) {
         console.log(error);
         res.status(500).send({ message: error });
     }
 }));
-router.delete('/term/:id/course/register/:courseId', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.delete('/term/:id/register/:courseId', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const termId = req.params.id;
     const courseId = req.params.courseId;
     try {
@@ -231,13 +252,20 @@ router.delete('/term/:id/course/register/:courseId', jwt_1.authMiddleware, (req,
         const term = yield term_1.default.findById(termId).exec();
         const termCourses = term === null || term === void 0 ? void 0 : term.termCourses;
         if (course) {
-            const index = termCourses === null || termCourses === void 0 ? void 0 : termCourses.findIndex(course.id);
-            if (index && index > -1) {
-                termCourses === null || termCourses === void 0 ? void 0 : termCourses.splice(index, 1);
+            let arrIndex;
+            termCourses === null || termCourses === void 0 ? void 0 : termCourses.forEach((el, index) => {
+                if (el._id.toString() === (course === null || course === void 0 ? void 0 : course._id.toString())) {
+                    arrIndex = index;
+                }
+            });
+            console.log(arrIndex);
+            if (arrIndex !== undefined && arrIndex > -1) {
+                termCourses === null || termCourses === void 0 ? void 0 : termCourses.splice(arrIndex, 1);
+                console.log(termCourses);
+                yield term_1.default.findByIdAndUpdate(termId, {
+                    termCourses,
+                }).exec();
             }
-            yield term_1.default.findByIdAndUpdate(termId, {
-                termPreRegistrationCourses: termCourses,
-            }).exec();
         }
         res.status(200).send({
             message: 'deleted successfully',
@@ -264,6 +292,50 @@ router.put('/registration/:id',
         }
         else {
             res.status(400).send({ message: 'registration not found' });
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send({ message: error });
+    }
+}));
+router.get('/term/:id/preregistrations', 
+// authMiddleware,
+// (req: Request, res: Response, next: NextFunction) =>
+//   authorizationMiddleware('manager', req, res, next),
+(req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const requests = yield pre_register_request_1.default.find({ term: id })
+            .populate(['courses'])
+            .exec();
+        if (requests) {
+            res.status(200).send({ data: requests });
+        }
+        else {
+            res.status(400).send({ message: 'term not found' });
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send({ message: error });
+    }
+}));
+router.get('/term/:id/registrations', 
+// authMiddleware,
+// (req: Request, res: Response, next: NextFunction) =>
+//   authorizationMiddleware('manager', req, res, next),
+(req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const requests = yield register_request_1.default.find({ term: id })
+            .populate(['courses'])
+            .exec();
+        if (requests) {
+            res.status(200).send({ data: requests });
+        }
+        else {
+            res.status(400).send({ message: 'term not found' });
         }
     }
     catch (error) {

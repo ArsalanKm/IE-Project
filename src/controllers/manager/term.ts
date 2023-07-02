@@ -7,6 +7,7 @@ import { authorizationMiddleware } from '../../middlewares/authorization';
 import Term from '../../models/term';
 import { SemesterSubject } from '../../models/subject';
 import RegisterRequest from '../../models/register-request';
+import PreRegisterRequests from '../../models/pre-register-request';
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ router.get(
       const terms = await Term.find({})
         .populate(['termCourses', 'preRegistrationCourses'])
         .exec();
-      res.status(200).send({ terms });
+      res.status(200).send({ data: terms });
     } catch (error) {
       console.log(error);
       res.status(500).send({ message: error });
@@ -40,7 +41,7 @@ router.get(
       const course = await Term.findById(id)
         .populate(['termCourses', 'preRegistrationCourses'])
         .exec();
-      res.status(200).send({ course });
+      res.status(200).send({ data: course });
     } catch (error) {
       res.status(500).send({ message: 'server error' });
     }
@@ -156,14 +157,20 @@ router.get(
 
     try {
       const term = await Term.findById(termId)
-        .populate('preRegistrationCourses')
+        .populate({
+          path: 'preRegistrationCourses',
+          populate: {
+            path: 'teacher',
+            model: 'Teacher',
+          },
+        })
         .exec();
       console.log(term);
 
       const termPreRequests =
         term?.preRegistrationCourses as unknown as Array<ISemesterSubject>;
 
-      res.status(200).send({ courses: termPreRequests });
+      res.status(200).send({ data: termPreRequests });
     } catch (error) {
       console.log(error);
       res.status(500).send({ message: error });
@@ -185,13 +192,20 @@ router.delete(
       const term = await Term.findById(termId).exec();
       const termPreRegistrationCourses = term?.preRegistrationCourses;
       if (course) {
-        const index = termPreRegistrationCourses?.findIndex(course.id);
-        if (index && index > -1) {
-          termPreRegistrationCourses?.splice(index, 1);
+        let arrIndex;
+        termPreRegistrationCourses?.forEach((el, index) => {
+          if (el._id.toString() === course?._id.toString()) {
+            arrIndex = index;
+          }
+        });
+        console.log(arrIndex);
+
+        if (arrIndex && arrIndex > -1) {
+          termPreRegistrationCourses?.splice(arrIndex, 1);
+          await Term.findByIdAndUpdate(termId, {
+            preRegistrationCourses: termPreRegistrationCourses,
+          }).exec();
         }
-        await Term.findByIdAndUpdate(termId, {
-          termPreRegistrationCourses: termPreRegistrationCourses,
-        }).exec();
       }
       res.status(200).send({
         message: 'deleted successfully',
@@ -205,7 +219,7 @@ router.delete(
 );
 
 router.post(
-  '/term/:id/course/register/:courseId',
+  '/term/:id/register/:courseId',
   // authMiddleware,
   // (req: Request, res: Response, next: NextFunction) =>
   //   authorizationMiddleware('manager', req, res, next),
@@ -223,7 +237,7 @@ router.post(
       await Term.findByIdAndUpdate(termId, {
         termCourses,
       });
-      res.status(200).send({ message: 'created successfully', term });
+      res.status(200).send({ data: 'created successfully', term });
     } catch (error) {
       console.log(error);
       res.status(500).send({ message: error });
@@ -240,11 +254,19 @@ router.get(
     const termId = req.params.id;
 
     try {
-      const term = await Term.findById(termId).populate('termCourses').exec();
+      const term = await Term.findById(termId)
+        .populate({
+          path: 'termCourses',
+          populate: {
+            path: 'teacher',
+            model: 'Teacher',
+          },
+        })
+        .exec();
       const termCourses =
         term?.termCourses as unknown as Array<ISemesterSubject>;
 
-      res.status(200).send({ courses: termCourses });
+      res.status(200).send({ data: termCourses });
     } catch (error) {
       console.log(error);
       res.status(500).send({ message: error });
@@ -253,7 +275,7 @@ router.get(
 );
 
 router.delete(
-  '/term/:id/course/register/:courseId',
+  '/term/:id/register/:courseId',
   authMiddleware,
   (req: Request, res: Response, next: NextFunction) =>
     authorizationMiddleware('manager', req, res, next),
@@ -266,13 +288,22 @@ router.delete(
       const term = await Term.findById(termId).exec();
       const termCourses = term?.termCourses;
       if (course) {
-        const index = termCourses?.findIndex(course.id);
-        if (index && index > -1) {
-          termCourses?.splice(index, 1);
+        let arrIndex;
+        termCourses?.forEach((el, index) => {
+          if (el._id.toString() === course?._id.toString()) {
+            arrIndex = index;
+          }
+        });
+        console.log(arrIndex);
+
+        if (arrIndex !== undefined && arrIndex > -1) {
+          termCourses?.splice(arrIndex, 1);
+          console.log(termCourses);
+
+          await Term.findByIdAndUpdate(termId, {
+            termCourses,
+          }).exec();
         }
-        await Term.findByIdAndUpdate(termId, {
-          termPreRegistrationCourses: termCourses,
-        }).exec();
       }
       res.status(200).send({
         message: 'deleted successfully',
@@ -300,6 +331,52 @@ router.put(
         res.status(200).send({ message: 'updated successfully' });
       } else {
         res.status(400).send({ message: 'registration not found' });
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({ message: error });
+    }
+  }
+);
+
+router.get(
+  '/term/:id/preregistrations',
+  // authMiddleware,
+  // (req: Request, res: Response, next: NextFunction) =>
+  //   authorizationMiddleware('manager', req, res, next),
+  async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const requests = await PreRegisterRequests.find({ term: id })
+        .populate(['courses'])
+        .exec();
+      if (requests) {
+        res.status(200).send({ data: requests });
+      } else {
+        res.status(400).send({ message: 'term not found' });
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({ message: error });
+    }
+  }
+);
+
+router.get(
+  '/term/:id/registrations',
+  // authMiddleware,
+  // (req: Request, res: Response, next: NextFunction) =>
+  //   authorizationMiddleware('manager', req, res, next),
+  async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const requests = await RegisterRequest.find({ term: id })
+        .populate(['courses'])
+        .exec();
+      if (requests) {
+        res.status(200).send({ data: requests });
+      } else {
+        res.status(400).send({ message: 'term not found' });
       }
     } catch (error) {
       console.log(error);

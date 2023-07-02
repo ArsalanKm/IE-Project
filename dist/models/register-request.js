@@ -20,6 +20,10 @@ const registerSchema = new mongoose_1.default.Schema({
         required: false,
         default: false,
     },
+    term: {
+        type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: 'Term',
+    },
 }, {
     toJSON: {
         transform(doc, ret) {

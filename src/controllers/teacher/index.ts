@@ -98,7 +98,7 @@ router.get(
       const terms = await Term.find({})
         .populate(['termCourses', 'preRegistrationCourses'])
         .exec();
-      res.status(200).send({ terms });
+      res.status(200).send({ data: terms });
     } catch (error) {
       console.log(error);
       res.status(500).send({ message: error });

@@ -13,7 +13,7 @@ const termSchema = new mongoose_1.default.Schema({
         },
         {
             type: mongoose_1.default.Schema.Types.ObjectId,
-            ref: 'Student',
+            ref: 'Teacher',
         },
     ],
     termCourses: [

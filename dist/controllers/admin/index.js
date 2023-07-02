@@ -20,6 +20,7 @@ const subject_1 = require("../../models/subject");
 const professor_1 = __importDefault(require("./professor"));
 const student_1 = __importDefault(require("./student"));
 const manager_1 = __importDefault(require("./manager"));
+const faculty_1 = __importDefault(require("../../models/faculty"));
 const router = express_1.default.Router();
 // TO DO admin authorization
 router.use(professor_1.default);
@@ -31,6 +32,41 @@ router.get('/courses', jwt_1.authMiddleware, (req, res, next) => (0, authorizati
     try {
         const courses = yield subject_1.Subject.find({}).populate('preRequests').exec();
         res.status(200).send({ courses });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send({ message: error });
+    }
+}));
+router.post('/faculty', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('admin', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { name, field } = req.body;
+    if (!name || !field) {
+        res.status(400).send({ message: 'name and field could not be empty' });
+        return;
+    }
+    try {
+        const existed = yield faculty_1.default.findOne({ name }).exec();
+        if (existed) {
+            res.status(400).send({ message: 'existed faculty' });
+            return;
+        }
+        yield new faculty_1.default({
+            name,
+            field,
+        }).save();
+        res.status(200).send({ message: 'created successfully', success: true });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send({ message: error });
+    }
+}));
+router.get('/faculties', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('admin', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const data = yield faculty_1.default.find({}).exec();
+        if (data) {
+            res.status(200).send({ data });
+        }
     }
     catch (error) {
         console.log(error);

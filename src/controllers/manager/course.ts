@@ -75,22 +75,23 @@ router.post(
 
 router.put(
   '/course/:id',
-  authMiddleware,
-  (req: Request, res: Response, next: NextFunction) =>
-    authorizationMiddleware('manager', req, res, next),
+  // authMiddleware,
+  // (req: Request, res: Response, next: NextFunction) =>
+  //   authorizationMiddleware('manager', req, res, next),
   async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { name, value, preRequests, sameRequests, field } =
+    const { name, value, preRequests, sameRequests, field, teacher } =
       req.body as ISubject & {
         id: string;
       };
     try {
-      const subject = await Subject.findByIdAndUpdate(id, {
+      const subject = await SemesterSubject.findByIdAndUpdate(id, {
         name,
         value,
         preRequests,
         sameRequests,
         field,
+        teacher,
       }).exec();
 
       if (!subject) {
@@ -113,7 +114,7 @@ router.delete(
     const { id } = req.params;
 
     try {
-      const result = await Subject.findByIdAndDelete(id).exec();
+      const result = await SemesterSubject.findByIdAndDelete(id).exec();
       if (result) {
         res.status(200).send({ data: result, message: 'deleted successfully' });
       } else {
@@ -127,13 +128,15 @@ router.delete(
 
 router.get(
   '/courses',
-  // authMiddleware,
+  authMiddleware,
   // (req: Request, res: Response, next: NextFunction) =>
   //   authorizationMiddleware('manager', req, res, next),
   async (req: Request, res: Response) => {
     try {
-      const courses = await Subject.find({}).populate('preRequests').exec();
-      res.status(200).send({ courses });
+      const courses = await SemesterSubject.find({})
+        .populate('preRequests')
+        .exec();
+      res.status(200).send({ data: courses });
     } catch (error) {
       console.log(error);
       res.status(500).send({ message: error });

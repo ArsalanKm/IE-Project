@@ -79,7 +79,7 @@ router.get('/terms',
         const terms = yield term_1.default.find({})
             .populate(['termCourses', 'preRegistrationCourses'])
             .exec();
-        res.status(200).send({ terms });
+        res.status(200).send({ data: terms });
     }
     catch (error) {
         console.log(error);

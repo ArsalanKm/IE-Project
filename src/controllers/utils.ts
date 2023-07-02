@@ -186,19 +186,19 @@ export const createUtil = async (
   }
   const existUser = await model
     ?.findOne({
-      _id: data?.id,
+      universityId: data?.universityId,
     })
     .exec();
 
   if (existUser) {
-    res
-      .status(400)
-      .send({ message: 'Professor exits with same university ID' });
+    res.status(400).send({ message: 'user exits with same university ID' });
     return;
   }
   try {
     const result = model && (await new model(data).save());
-    res.status(200).send({ message: ' created successfully', data: result });
+    res
+      .status(200)
+      .send({ message: ' created successfully', data: result, success: true });
   } catch (error) {
     res.status(500).send({ message: error });
   }

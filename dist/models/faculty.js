@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const facultySchema = new mongoose_1.default.Schema({
     name: { type: String },
+    field: { type: String },
 }, {
     toJSON: {
         transform(doc, ret) {

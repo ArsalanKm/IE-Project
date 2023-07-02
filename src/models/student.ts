@@ -9,7 +9,7 @@ const studentSchema = passwordMiddleware(
       educationDegree: {
         type: String,
         required: true,
-        enum: ['Bachelor', 'Master', 'PhD'],
+        enum: ['کارشناسی', 'ارشد', 'دکتری'],
       },
       enteranceYear: { type: String, required: true },
       semester: { type: String, required: true },
@@ -19,6 +19,7 @@ const studentSchema = passwordMiddleware(
       leadTeacher: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Teacher',
+        default: null,
       },
     },
     {

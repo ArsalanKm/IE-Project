@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.authMiddleware = void 0;
 const jwt_1 = require("../utils/jwt");
 const authMiddleware = (req, res, next) => {
+    console.log(req.headers);
     const auth = req.headers.authorization;
     if (auth && auth.startsWith('Bearer')) {
         const token = auth.slice(7);

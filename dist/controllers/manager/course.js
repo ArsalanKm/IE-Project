@@ -69,16 +69,21 @@ router.post('/course',
         res.status(500).send({ message: error });
     }
 }));
-router.put('/course/:id', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.put('/course/:id', 
+// authMiddleware,
+// (req: Request, res: Response, next: NextFunction) =>
+//   authorizationMiddleware('manager', req, res, next),
+(req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    const { name, value, preRequests, sameRequests, field } = req.body;
+    const { name, value, preRequests, sameRequests, field, teacher } = req.body;
     try {
-        const subject = yield subject_1.Subject.findByIdAndUpdate(id, {
+        const subject = yield subject_1.SemesterSubject.findByIdAndUpdate(id, {
             name,
             value,
             preRequests,
             sameRequests,
             field,
+            teacher,
         }).exec();
         if (!subject) {
             res.status(400).send({ message: 'There is no course with that id' });
@@ -93,7 +98,7 @@ router.put('/course/:id', jwt_1.authMiddleware, (req, res, next) => (0, authoriz
 router.delete('/course/:id', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     try {
-        const result = yield subject_1.Subject.findByIdAndDelete(id).exec();
+        const result = yield subject_1.SemesterSubject.findByIdAndDelete(id).exec();
         if (result) {
             res.status(200).send({ data: result, message: 'deleted successfully' });
         }
@@ -105,14 +110,15 @@ router.delete('/course/:id', jwt_1.authMiddleware, (req, res, next) => (0, autho
         res.status(500).send({ message: 'server error' });
     }
 }));
-router.get('/courses', 
-// authMiddleware,
+router.get('/courses', jwt_1.authMiddleware, 
 // (req: Request, res: Response, next: NextFunction) =>
 //   authorizationMiddleware('manager', req, res, next),
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const courses = yield subject_1.Subject.find({}).populate('preRequests').exec();
-        res.status(200).send({ courses });
+        const courses = yield subject_1.SemesterSubject.find({})
+            .populate('preRequests')
+            .exec();
+        res.status(200).send({ data: courses });
     }
     catch (error) {
         console.log(error);

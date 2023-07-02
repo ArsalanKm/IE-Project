@@ -46,7 +46,11 @@ const subjectType = {
 };
 const subjectSchema = new mongoose_1.default.Schema(Object.assign({}, subjectType));
 exports.Subject = mongoose_1.default.model('Subject', subjectSchema);
-const semesterSubjectSchema = new mongoose_1.default.Schema(Object.assign(Object.assign({}, subjectType), { classTime: { type: String, required: true }, examTime: { type: String, required: true }, examLocation: { type: String, required: true }, teacher: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Teacher' }, capacity: { type: String, required: true }, semester: { type: String, required: true } }), {
+const semesterSubjectSchema = new mongoose_1.default.Schema(Object.assign(Object.assign({}, subjectType), { classTime: { type: String, required: true }, examTime: { type: String, required: true }, examLocation: { type: String, required: true }, teacher: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Teacher', default: null }, capacity: { type: Number, default: 0 }, semester: { type: String, required: false }, preRegisterStudents: [
+        { type: mongoose_1.Schema.Types.ObjectId, ref: 'Student', default: null },
+    ], registerStudents: [
+        { type: mongoose_1.Schema.Types.ObjectId, ref: 'Student', default: null },
+    ] }), {
     toJSON: {
         transform(doc, ret) {
             ret.id = ret._id;

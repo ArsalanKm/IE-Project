@@ -3,17 +3,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.loginValidator = exports.subjectDataValidator = exports.managerDataValidator = exports.teacherDataValidator = exports.studentDataValidator = exports.personDataValidator = void 0;
 const personDataValidator = (data) => {
     const { name, familyName, phoneNumber, password, universityId, email } = data;
-    if (!name ||
-        !familyName ||
-        !password ||
-        !universityId ||
-        !phoneNumber ||
-        !email) {
-        return {
-            valid: false,
-            message: 'Fields could not be empty',
-        };
-    }
+    // if (
+    //   !name ||
+    //   !familyName ||
+    //   !password ||
+    //   !universityId ||
+    //   !phoneNumber ||
+    //   !email
+    // ) {
+    //   return {
+    //     valid: false,
+    //     message: 'Fields could not be empty',
+    //   };
+    // }
     return {
         valid: true,
         message: '',
@@ -21,6 +23,7 @@ const personDataValidator = (data) => {
 };
 exports.personDataValidator = personDataValidator;
 const studentDataValidator = (data) => {
+    console.log(data);
     const { valid, message } = (0, exports.personDataValidator)(data);
     if (!valid) {
         return {
@@ -29,24 +32,36 @@ const studentDataValidator = (data) => {
         };
     }
     const { educationDegree, enteranceYear, semester, average, faculty, field } = data;
-    if (!educationDegree ||
-        !enteranceYear ||
-        !semester ||
-        !average ||
-        !faculty ||
-        !field) {
-        return {
-            valid: false,
-            message: 'Fields should not be empty',
-        };
-    }
-    if (!['Bachelor', 'Master', 'PhD'].includes(educationDegree)) {
+    // if (
+    //   !educationDegree ||
+    //   !enteranceYear ||
+    //   !semester ||
+    //   !average ||
+    //   !faculty ||
+    //   !field
+    // ) {
+    //   console.log({
+    //     educationDegree,
+    //     enteranceYear,
+    //     semester,
+    //     average,
+    //     faculty,
+    //     field,
+    //   });
+    //   return {
+    //     valid: false,
+    //     message: 'Fields should not be empty',
+    //   };
+    // }
+    console.log(educationDegree);
+    if (!['کارشناسی', 'ارشد', 'دکتری'].includes(educationDegree)) {
         return {
             valid: false,
             message: 'education degree should be one of Bachelor, Master, PhD',
         };
     }
-    if (isNaN(average)) {
+    console.log(average);
+    if (isNaN(Number(average))) {
         return {
             valid: false,
             message: 'average field should be an integer',
