@@ -35,7 +35,7 @@ const loginHandler = (userType, req, res) => __awaiter(void 0, void 0, void 0, f
             }
             let token;
             try {
-                token = (0, jwt_1.generateAuthToken)(user._id);
+                token = (0, jwt_1.generateAuthToken)(user._id, user.name);
             }
             catch (error) {
                 res.status(500).send({

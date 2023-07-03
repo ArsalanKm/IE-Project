@@ -87,9 +87,9 @@ router.put(
 
 router.get(
   '/terms',
-  // authMiddleware,
-  // (req: Request, res: Response, next: NextFunction) =>
-  //   authorizationMiddleware('manager', req, res, next),
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('student', req, res, next),
   async (req: Request, res: Response) => {
     try {
       const terms = await Term.find({})
@@ -189,6 +189,7 @@ router.post(
 
           await SemesterSubject.findByIdAndUpdate(courseId, {
             preRegisterStudents: existedPreRegisterStudents,
+            $inc: { capacity: 1 },
           }).exec();
 
           const request = existedPreRequest as unknown as IPreRegisterRequests;
@@ -204,6 +205,8 @@ router.post(
         } else {
           await SemesterSubject.findByIdAndUpdate(courseId, {
             $push: { preRegisterStudents: req.body.userId },
+            $inc: { capacity: 1 },
+
             // registerStudents: existedRegisterStudents,
           }).exec();
           await new PreRegisterRequests({
@@ -260,6 +263,7 @@ router.delete(
           }).exec();
           await SemesterSubject.findByIdAndUpdate(courseId, {
             $pull: { preRegisterStudents: req.body.userId },
+            $inc: { capacity: -1 },
           }).exec();
 
           res.status(200).send({
@@ -364,6 +368,7 @@ router.post(
           }
           await SemesterSubject.findByIdAndUpdate(courseId, {
             registerStudents: existedRegisterStudents,
+            $inc: { capacity: 1 },
           }).exec();
 
           const request = existedPreRequest as unknown as IPreRegisterRequests;
@@ -381,6 +386,7 @@ router.post(
         } else {
           await SemesterSubject.findByIdAndUpdate(courseId, {
             $push: { registerStudents: req.body.userId },
+            $inc: { capacity: 1 },
             // registerStudents: existedRegisterStudents,
           }).exec();
           await new RegisterRequest({
@@ -465,6 +471,27 @@ router.delete(
           res.status(400).send({ message: 'register not found' });
           return;
         }
+      } else {
+        res.status(400).send({ message: 'term not found' });
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({ message: error });
+    }
+  }
+);
+router.get(
+  '/term_courses',
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('student', req, res, next),
+  async (req: Request, res: Response) => {
+    try {
+      const requests = await Student.findById(req.body.userId)
+        .populate(['termCourses'])
+        .exec();
+      if (requests) {
+        res.status(200).send({ data: requests.termCourses });
       } else {
         res.status(400).send({ message: 'term not found' });
       }

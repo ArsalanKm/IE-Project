@@ -70,11 +70,7 @@ router.get('/all-courses', jwt_1.authMiddleware, (req, res, next) => (0, authori
     }
 }));
 router.put('/:id', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('teacher', req, res, next), (req, res) => (0, utils_1.updateUtil)('teacher', req, res, true));
-router.get('/terms', 
-// authMiddleware,
-// (req: Request, res: Response, next: NextFunction) =>
-//   authorizationMiddleware('manager', req, res, next),
-(req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/terms', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('teacher', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const terms = yield term_1.default.find({})
             .populate(['termCourses', 'preRegistrationCourses'])
@@ -86,18 +82,14 @@ router.get('/terms',
         res.status(500).send({ message: error });
     }
 }));
-router.get('/term/:id/registrations', 
-// authMiddleware,
-// (req: Request, res: Response, next: NextFunction) =>
-//   authorizationMiddleware('manager', req, res, next),
-(req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/term/:id/registrations', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('teacher', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const requests = yield register_request_1.default.find({ term: id })
-            .populate(['courses'])
+        const data = yield register_request_1.default.find({ term: id })
+            .populate(['courses', 'student'])
             .exec();
-        if (requests) {
-            res.status(200).send({ requests });
+        if (data) {
+            res.status(200).send({ data });
         }
         else {
             res.status(400).send({ message: 'term not found' });
@@ -115,9 +107,9 @@ router.get('/term/:id/course/:courseId/registrations',
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id, courseId } = req.params;
-        const requests = yield register_request_1.default.find({}).exec();
-        if (requests) {
-            res.status(200).send({ requests });
+        const data = yield register_request_1.default.find({}).exec();
+        if (data) {
+            res.status(200).send({ data });
         }
         else {
             res.status(400).send({ message: 'register for term not found' });
@@ -128,7 +120,7 @@ router.get('/term/:id/course/:courseId/registrations',
             res.status(400).send({ message: 'coures not found in term courses' });
             return;
         }
-        const response = requests.filter((el) => el.courses.find((el) => el.id === courseId));
+        const response = data.filter((el) => el.courses.find((el) => el.id === courseId));
         res.status(200).send({ response });
     }
     catch (error) {
@@ -136,15 +128,31 @@ router.get('/term/:id/course/:courseId/registrations',
         res.status(500).send({ message: error });
     }
 }));
-router.put('/registration/:id', 
+router.get('/term/:id', 
 // authMiddleware,
 // (req: Request, res: Response, next: NextFunction) =>
 //   authorizationMiddleware('manager', req, res, next),
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    try {
+        const course = yield term_1.default.findById(id)
+            .populate(['termCourses', 'preRegistrationCourses'])
+            .exec();
+        res.status(200).send({ data: course });
+    }
+    catch (error) {
+        res.status(500).send({ message: 'server error' });
+    }
+}));
+router.put('/registration/:id', 
+// authMiddleware,
+// (req: Request, res: Response, next: NextFunction) =>
+//   authorizationMiddleware('teacher', req, res, next),
+(req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
         const update = yield register_request_1.default.findByIdAndUpdate(id, {
-            confirm: true,
+            teacherConfirm: true,
         }).exec();
         if (update) {
             res.status(200).send({ message: 'updated successfully' });
@@ -152,6 +160,26 @@ router.put('/registration/:id',
         else {
             res.status(400).send({ message: 'registration not found' });
         }
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send({ message: error });
+    }
+}));
+router.get('/term/:id/registration_courses', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('teacher', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const termId = req.params.id;
+    try {
+        const term = yield term_1.default.findById(termId)
+            .populate({
+            path: 'termCourses',
+            populate: {
+                path: 'teacher',
+                model: 'Teacher',
+            },
+        })
+            .exec();
+        const termCourses = term === null || term === void 0 ? void 0 : term.termCourses;
+        res.status(200).send({ data: termCourses });
     }
     catch (error) {
         console.log(error);

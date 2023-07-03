@@ -66,11 +66,7 @@ router.get('/course/:id', jwt_1.authMiddleware, (req, res, next) => (0, authoriz
     }
 }));
 router.put('/:id', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('student', req, res, next), (req, res) => (0, utils_1.updateUtil)('student', req, res, true));
-router.get('/terms', 
-// authMiddleware,
-// (req: Request, res: Response, next: NextFunction) =>
-//   authorizationMiddleware('manager', req, res, next),
-(req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/terms', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('student', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const terms = yield term_1.default.find({})
             .populate(['termCourses', 'preRegistrationCourses'])
@@ -151,6 +147,7 @@ router.post('/term/:id/preregister/:courseId', jwt_1.authMiddleware, (req, res, 
                 }
                 yield subject_1.SemesterSubject.findByIdAndUpdate(courseId, {
                     preRegisterStudents: existedPreRegisterStudents,
+                    $inc: { capacity: 1 },
                 }).exec();
                 const request = existedPreRequest;
                 (_a = existedPreRequest === null || existedPreRequest === void 0 ? void 0 : existedPreRequest.courses) === null || _a === void 0 ? void 0 : _a.push(courseId);
@@ -164,6 +161,7 @@ router.post('/term/:id/preregister/:courseId', jwt_1.authMiddleware, (req, res, 
             else {
                 yield subject_1.SemesterSubject.findByIdAndUpdate(courseId, {
                     $push: { preRegisterStudents: req.body.userId },
+                    $inc: { capacity: 1 },
                     // registerStudents: existedRegisterStudents,
                 }).exec();
                 yield new pre_register_request_1.default({
@@ -213,6 +211,7 @@ router.delete('/term/:id/preregister/:courseId', jwt_1.authMiddleware, (req, res
                 }).exec();
                 yield subject_1.SemesterSubject.findByIdAndUpdate(courseId, {
                     $pull: { preRegisterStudents: req.body.userId },
+                    $inc: { capacity: -1 },
                 }).exec();
                 res.status(200).send({
                     message: 'course deleted from pre-registration request',
@@ -297,6 +296,7 @@ router.post('/term/:id/register/:courseId', jwt_1.authMiddleware, (req, res, nex
                 }
                 yield subject_1.SemesterSubject.findByIdAndUpdate(courseId, {
                     registerStudents: existedRegisterStudents,
+                    $inc: { capacity: 1 },
                 }).exec();
                 const request = existedPreRequest;
                 (_c = existedPreRequest === null || existedPreRequest === void 0 ? void 0 : existedPreRequest.courses) === null || _c === void 0 ? void 0 : _c.push(courseId);
@@ -312,6 +312,7 @@ router.post('/term/:id/register/:courseId', jwt_1.authMiddleware, (req, res, nex
             else {
                 yield subject_1.SemesterSubject.findByIdAndUpdate(courseId, {
                     $push: { registerStudents: req.body.userId },
+                    $inc: { capacity: 1 },
                     // registerStudents: existedRegisterStudents,
                 }).exec();
                 yield new register_request_1.default({
@@ -387,6 +388,23 @@ router.delete('/term/:id/register/:courseId', jwt_1.authMiddleware, (req, res, n
                 res.status(400).send({ message: 'register not found' });
                 return;
             }
+        }
+        else {
+            res.status(400).send({ message: 'term not found' });
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send({ message: error });
+    }
+}));
+router.get('/term_courses', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('student', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const requests = yield student_1.default.findById(req.body.userId)
+            .populate(['termCourses'])
+            .exec();
+        if (requests) {
+            res.status(200).send({ data: requests.termCourses });
         }
         else {
             res.status(400).send({ message: 'term not found' });

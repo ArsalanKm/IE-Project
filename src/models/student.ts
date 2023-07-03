@@ -12,15 +12,27 @@ const studentSchema = passwordMiddleware(
         enum: ['کارشناسی', 'ارشد', 'دکتری'],
       },
       enteranceYear: { type: String, required: true },
-      semester: { type: String, required: true },
-      average: { type: Number, required: true },
-      faculty: { type: String, required: true },
-      field: { type: String, required: true },
+      semester: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Term',
+        default: null,
+      },
+      average: { type: Number, required: false },
+      faculty: { type: String, required: false },
+      field: { type: String, required: false },
       leadTeacher: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Teacher',
         default: null,
       },
+      termCourses: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'SemesterSubject',
+          default: null,
+          required: false,
+        },
+      ],
     },
     {
       toJSON: {

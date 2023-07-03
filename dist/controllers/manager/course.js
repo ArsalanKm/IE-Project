@@ -116,7 +116,7 @@ router.get('/courses', jwt_1.authMiddleware,
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const courses = yield subject_1.SemesterSubject.find({})
-            .populate('preRequests')
+            .populate(['preRequests', 'semester', 'teacher'])
             .exec();
         res.status(200).send({ data: courses });
     }

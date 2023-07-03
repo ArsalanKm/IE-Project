@@ -10,6 +10,7 @@ import professorRouter from './professor';
 import studentRouter from './student';
 import managerRouter from './manager';
 import Faculty from '../../models/faculty';
+import Term from '../../models/term';
 
 const router = express.Router();
 
@@ -79,6 +80,23 @@ router.get(
   async (req: Request, res: Response) => {
     try {
       const data = await Faculty.find({}).exec();
+      if (data) {
+        res.status(200).send({ data });
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({ message: error });
+    }
+  }
+);
+router.get(
+  '/terms',
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('admin', req, res, next),
+  async (req: Request, res: Response) => {
+    try {
+      const data = await Term.find({}).exec();
       if (data) {
         res.status(200).send({ data });
       }

@@ -42,7 +42,7 @@ export const loginHandler = async (
       }
       let token;
       try {
-        token = generateAuthToken(user._id as string);
+        token = generateAuthToken(user._id as string, user.name);
       } catch (error) {
         res.status(500).send({
           message: 'something went run while creating token',

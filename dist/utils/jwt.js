@@ -6,8 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.validateToken = exports.generateAuthToken = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const jwtKey = 'secret';
-const generateAuthToken = (id) => {
-    const token = jsonwebtoken_1.default.sign({ id }, jwtKey, { expiresIn: '100d' });
+const generateAuthToken = (id, name) => {
+    const token = jsonwebtoken_1.default.sign({ id, name }, jwtKey, { expiresIn: '100d' });
     return token;
 };
 exports.generateAuthToken = generateAuthToken;

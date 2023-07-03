@@ -90,9 +90,9 @@ router.put(
 
 router.get(
   '/terms',
-  // authMiddleware,
-  // (req: Request, res: Response, next: NextFunction) =>
-  //   authorizationMiddleware('manager', req, res, next),
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('teacher', req, res, next),
   async (req: Request, res: Response) => {
     try {
       const terms = await Term.find({})
@@ -107,17 +107,17 @@ router.get(
 );
 router.get(
   '/term/:id/registrations',
-  // authMiddleware,
-  // (req: Request, res: Response, next: NextFunction) =>
-  //   authorizationMiddleware('manager', req, res, next),
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('teacher', req, res, next),
   async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const requests = await RegisterRequest.find({ term: id })
-        .populate(['courses'])
+      const data = await RegisterRequest.find({ term: id })
+        .populate(['courses', 'student'])
         .exec();
-      if (requests) {
-        res.status(200).send({ requests });
+      if (data) {
+        res.status(200).send({ data });
       } else {
         res.status(400).send({ message: 'term not found' });
       }
@@ -136,9 +136,9 @@ router.get(
   async (req: Request, res: Response) => {
     try {
       const { id, courseId } = req.params;
-      const requests = await RegisterRequest.find({}).exec();
-      if (requests) {
-        res.status(200).send({ requests });
+      const data = await RegisterRequest.find({}).exec();
+      if (data) {
+        res.status(200).send({ data });
       } else {
         res.status(400).send({ message: 'register for term not found' });
       }
@@ -153,9 +153,9 @@ router.get(
         return;
       }
 
-      const response = (
-        requests as unknown as Array<IPreRegisterRequests>
-      ).filter((el) => el.courses.find((el) => el.id === courseId));
+      const response = (data as unknown as Array<IPreRegisterRequests>).filter(
+        (el) => el.courses.find((el) => el.id === courseId)
+      );
 
       res.status(200).send({ response });
     } catch (error) {
@@ -165,22 +165,69 @@ router.get(
   }
 );
 
-router.put(
-  '/registration/:id',
+router.get(
+  '/term/:id',
   // authMiddleware,
   // (req: Request, res: Response, next: NextFunction) =>
   //   authorizationMiddleware('manager', req, res, next),
   async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    try {
+      const course = await Term.findById(id)
+        .populate(['termCourses', 'preRegistrationCourses'])
+        .exec();
+      res.status(200).send({ data: course });
+    } catch (error) {
+      res.status(500).send({ message: 'server error' });
+    }
+  }
+);
+
+router.put(
+  '/registration/:id',
+  // authMiddleware,
+  // (req: Request, res: Response, next: NextFunction) =>
+  //   authorizationMiddleware('teacher', req, res, next),
+  async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const update = await RegisterRequest.findByIdAndUpdate(id, {
-        confirm: true,
+        teacherConfirm: true,
       }).exec();
       if (update) {
         res.status(200).send({ message: 'updated successfully' });
       } else {
         res.status(400).send({ message: 'registration not found' });
       }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({ message: error });
+    }
+  }
+);
+router.get(
+  '/term/:id/registration_courses',
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('teacher', req, res, next),
+  async (req: Request, res: Response) => {
+    const termId = req.params.id;
+
+    try {
+      const term = await Term.findById(termId)
+        .populate({
+          path: 'termCourses',
+          populate: {
+            path: 'teacher',
+            model: 'Teacher',
+          },
+        })
+        .exec();
+      const termCourses =
+        term?.termCourses as unknown as Array<ISemesterSubject>;
+
+      res.status(200).send({ data: termCourses });
     } catch (error) {
       console.log(error);
       res.status(500).send({ message: error });

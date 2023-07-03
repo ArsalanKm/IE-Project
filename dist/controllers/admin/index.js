@@ -21,6 +21,7 @@ const professor_1 = __importDefault(require("./professor"));
 const student_1 = __importDefault(require("./student"));
 const manager_1 = __importDefault(require("./manager"));
 const faculty_1 = __importDefault(require("../../models/faculty"));
+const term_1 = __importDefault(require("../../models/term"));
 const router = express_1.default.Router();
 // TO DO admin authorization
 router.use(professor_1.default);
@@ -64,6 +65,18 @@ router.post('/faculty', jwt_1.authMiddleware, (req, res, next) => (0, authorizat
 router.get('/faculties', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('admin', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const data = yield faculty_1.default.find({}).exec();
+        if (data) {
+            res.status(200).send({ data });
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send({ message: error });
+    }
+}));
+router.get('/terms', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('admin', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const data = yield term_1.default.find({}).exec();
         if (data) {
             res.status(200).send({ data });
         }

@@ -12,7 +12,12 @@ const registerSchema = new mongoose.Schema(
         ref: 'SemesterSubject',
       },
     ],
-    confirmed: {
+    teacherConfirm: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    managerConfirm: {
       type: Boolean,
       required: false,
       default: false,

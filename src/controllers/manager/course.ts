@@ -134,7 +134,7 @@ router.get(
   async (req: Request, res: Response) => {
     try {
       const courses = await SemesterSubject.find({})
-        .populate('preRequests')
+        .populate(['preRequests', 'semester', 'teacher'])
         .exec();
       res.status(200).send({ data: courses });
     } catch (error) {

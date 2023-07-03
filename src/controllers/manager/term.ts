@@ -8,6 +8,7 @@ import Term from '../../models/term';
 import { SemesterSubject } from '../../models/subject';
 import RegisterRequest from '../../models/register-request';
 import PreRegisterRequests from '../../models/pre-register-request';
+import Student from '../../models/student';
 
 const router = express.Router();
 
@@ -318,15 +319,31 @@ router.delete(
 
 router.put(
   '/registration/:id',
-  // authMiddleware,
-  // (req: Request, res: Response, next: NextFunction) =>
-  //   authorizationMiddleware('manager', req, res, next),
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction) =>
+    authorizationMiddleware('manager', req, res, next),
   async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
+      const existed = await RegisterRequest.findById(id)
+        .populate('student')
+        .exec();
+      // if (!existed?.teacherConfirm) {
+      //   res.status(400).send({ message: 'teacher should confirm firsti' });
+      //   return;
+      // }
       const update = await RegisterRequest.findByIdAndUpdate(id, {
-        confirm: true,
+        managerConfirm: true,
       }).exec();
+
+      console.log(req.body.userId);
+      const tmp = existed?.courses.map((el) => el.toString());
+      console.log(tmp);
+
+      const student = await Student.findByIdAndUpdate(existed?.student?.id, {
+        termCourses: tmp,
+      }).exec();
+
       if (update) {
         res.status(200).send({ message: 'updated successfully' });
       } else {
@@ -348,7 +365,7 @@ router.get(
     try {
       const { id } = req.params;
       const requests = await PreRegisterRequests.find({ term: id })
-        .populate(['courses'])
+        .populate(['courses', 'student'])
         .exec();
       if (requests) {
         res.status(200).send({ data: requests });
@@ -371,7 +388,7 @@ router.get(
     try {
       const { id } = req.params;
       const requests = await RegisterRequest.find({ term: id })
-        .populate(['courses'])
+        .populate(['courses', 'student'])
         .exec();
       if (requests) {
         res.status(200).send({ data: requests });

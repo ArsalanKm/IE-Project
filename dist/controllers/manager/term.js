@@ -19,6 +19,7 @@ const term_1 = __importDefault(require("../../models/term"));
 const subject_1 = require("../../models/subject");
 const register_request_1 = __importDefault(require("../../models/register-request"));
 const pre_register_request_1 = __importDefault(require("../../models/pre-register-request"));
+const student_1 = __importDefault(require("../../models/student"));
 const router = express_1.default.Router();
 router.get('/terms', 
 // authMiddleware,
@@ -277,15 +278,25 @@ router.delete('/term/:id/register/:courseId', jwt_1.authMiddleware, (req, res, n
         res.status(500).send({ message: error });
     }
 }));
-router.put('/registration/:id', 
-// authMiddleware,
-// (req: Request, res: Response, next: NextFunction) =>
-//   authorizationMiddleware('manager', req, res, next),
-(req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.put('/registration/:id', jwt_1.authMiddleware, (req, res, next) => (0, authorization_1.authorizationMiddleware)('manager', req, res, next), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const { id } = req.params;
+        const existed = yield register_request_1.default.findById(id)
+            .populate('student')
+            .exec();
+        // if (!existed?.teacherConfirm) {
+        //   res.status(400).send({ message: 'teacher should confirm firsti' });
+        //   return;
+        // }
         const update = yield register_request_1.default.findByIdAndUpdate(id, {
-            confirm: true,
+            managerConfirm: true,
+        }).exec();
+        console.log(req.body.userId);
+        const tmp = existed === null || existed === void 0 ? void 0 : existed.courses.map((el) => el.toString());
+        console.log(tmp);
+        const student = yield student_1.default.findByIdAndUpdate((_a = existed === null || existed === void 0 ? void 0 : existed.student) === null || _a === void 0 ? void 0 : _a.id, {
+            termCourses: tmp,
         }).exec();
         if (update) {
             res.status(200).send({ message: 'updated successfully' });
@@ -307,7 +318,7 @@ router.get('/term/:id/preregistrations',
     try {
         const { id } = req.params;
         const requests = yield pre_register_request_1.default.find({ term: id })
-            .populate(['courses'])
+            .populate(['courses', 'student'])
             .exec();
         if (requests) {
             res.status(200).send({ data: requests });
@@ -329,7 +340,7 @@ router.get('/term/:id/registrations',
     try {
         const { id } = req.params;
         const requests = yield register_request_1.default.find({ term: id })
-            .populate(['courses'])
+            .populate(['courses', 'student'])
             .exec();
         if (requests) {
             res.status(200).send({ data: requests });
